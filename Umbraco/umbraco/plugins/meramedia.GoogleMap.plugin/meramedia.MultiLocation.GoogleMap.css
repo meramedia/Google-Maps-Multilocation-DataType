@@ -1,0 +1,19 @@
+﻿/* Map container */
+.gmapContainer { line-height: normal; clear: both; }
+    .gmapContainer input.place { width: 75%; margin: 0 5px 3px 0; padding: 2px; }
+    .gmapContainer input.value{clear: left;width: 375px;margin: 0 5px 0 0;background-color: #eeeeee;}
+    .gmapContainer .button {width: 75px;}
+    .gmapContainer .informationButton {width: 16px;height: 16px;float: left;margin-bottom: 4px;margin-right: 20px;}
+    .gmapContainer .map{clear: both;height: 375px;width: 461px;}
+    .gmapContainer .mapWidth, .gmapContainer .mapHeight {margin-left: 5px; }
+    
+.validatorError { float: left; color: Red; clear: both; }
+
+/* List of markers */
+ul.markerList {list-style: none;padding: 0;}
+    ul.markerList li { position: relative; margin-bottom: 4px; width: 100%; padding: 10px; background: #f4f4f4; border: 1px solid #ccc;}
+        ul.markerList li div.name p { font-size: 11px; color: #777; padding: 0; margin: 0; }
+        ul.markerList li > div { margin-bottom: 20px;}
+        ul.markerList li div.label {float:left; width: 200px;}
+        ul.markerList li div {display: table;}
+ul.markerList li .removeMarker { width: 16px; height: 16px; margin-left: 20px; right: 10px; top: 10px; position: absolute; background: transparent url('delete.png') no-repeat 0 0; }

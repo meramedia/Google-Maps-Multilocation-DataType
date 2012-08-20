@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "meramedia.Umbraco.GoogleMaps", "meramedia.Umbraco.GoogleMaps\meramedia.Umbraco.GoogleMaps.csproj", "{108AD090-7291-46CB-AC93-5346126D03E5}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "localhost", "http://localhost:1320", "{B0480D31-6706-4294-B515-929C42933778}"
+	ProjectSection(WebsiteProperties) = preProject
+		UseIISExpress = "true"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		ProjectReferences = "{108AD090-7291-46CB-AC93-5346126D03E5}|meramedia.Umbraco.GoogleMaps.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/Umbraco"
+		Debug.AspNetCompiler.PhysicalPath = "Umbraco\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\Umbraco\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/Umbraco"
+		Release.AspNetCompiler.PhysicalPath = "Umbraco\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\Umbraco\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		SlnRelativePath = "Umbraco\"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{108AD090-7291-46CB-AC93-5346126D03E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{108AD090-7291-46CB-AC93-5346126D03E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{108AD090-7291-46CB-AC93-5346126D03E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{108AD090-7291-46CB-AC93-5346126D03E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0480D31-6706-4294-B515-929C42933778}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0480D31-6706-4294-B515-929C42933778}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0480D31-6706-4294-B515-929C42933778}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0480D31-6706-4294-B515-929C42933778}.Release|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

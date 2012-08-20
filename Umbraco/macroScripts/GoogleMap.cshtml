@@ -1,0 +1,30 @@
+@*
+    This file contains the necessary implementation to render a Google Map from the included
+    Google Map library.
+
+    The map is generated with the GoogleMap class in the included file (see meramedia.Umbraco.GoogleMaps.Helpers.Constants.GoogleMapJavascript)
+    The rendering is performed withing the Render class (see meramedia.Umbraco.GoogleMaps.Helpers.Constants.RenderMultiLocationJavaScript)
+
+    Javascripts are included if necessary meaning that if libraries are already loaded the loading will not be performed.
+*@
+@inherits umbraco.MacroEngines.DynamicNodeContext
+@using meramedia.Umbraco.GoogleMaps.Objects
+@using Newtonsoft.Json;
+@{
+    var json = Model.GetPropertyValue( Parameter[ "MapPropertyName" ].ToString() );
+    GoogleMap map = GoogleMap.Parse( json );
+}
+<script>!window.jQuery && document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"><\/script>')</script>
+<script>
+    @* This is a bit on the ugly side, future version should include a cleanup *@
+    var meramedia = { GoogleMaps: {}, RenderSettings: { Container: "gmapContainer_@(Model.Id)", MapContainer : "map_@(Model.Id)", "Object": @Html.Raw( map.ToString() ) } };
+    $(function () {
+        LoadMapsApi('meramedia.GoogleMaps.Render');
+    });
+</script>
+<script>!window.jQuery && document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"><\/script>')</script>
+<script>!window.GoogleMap && document.write('<script src="@(meramedia.Umbraco.GoogleMaps.Helpers.Constants.GoogleMapJavascript)"><\/script>');</script>
+<script>!window.meramedia.GoogleMaps.Render && document.write('<script src="@(meramedia.Umbraco.GoogleMaps.Helpers.Constants.RenderMultiLocationJavaScript)"><\/script>')</script>
+<div id="gmapContainer_@(Model.Id)" class="gmapContainer">
+    <div class="map" id="map_@(Model.Id)" style="width: @(map.Width); height:@(map.Height);"></div>
+</div>
