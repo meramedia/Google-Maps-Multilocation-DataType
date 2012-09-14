@@ -10,30 +10,20 @@ meramedia.GoogleMaps.Render = function () {
     var mapOptions = (content == null) ? null : { zoom: content.Zoom, mapTypeId: content.MapTypeId, center: new google.maps.LatLng(content.Center.split(',')[0], content.Center.split(',')[1]) };
     var id = meramedia.RenderSettings.MapContainer;
 
-    // Create the map in our context
-    var map = new GoogleMap(id, mapOptions, null, []);
-    map.container = document.getElementById(meramedia.RenderSettings.MapContainer);
-    map.Initialize();
-
-    // Fetch markers from saved content
+    var markers = [];
     if (content != null) {
-        $.each(content.Markers, function () {
-            map.CreateMarker( 
-                null,
-                (this.Name == undefined ? null : this.Name),
-                null,
-                map.map,
-                {
-                    clickable: true,
-                    draggable: false,
-                    position: new google.maps.LatLng(this.Position.split(',')[0], this.Position.split(',')[1]),
-                    title: this.Title,
-                    visible: true,
-                    icon: (this.Icon == undefined) ? null : this.Icon,
-                    zIndex: 10
-                }
-            );
+        $.each(content.Markers, function (i) {
+            markers.push(this);
         });
     }
+
+    // Create the map in our context
+    var map = new GoogleMap(id, mapOptions, null, null, markers);
+    map.container = document.getElementById(meramedia.RenderSettings.MapContainer);
+    map.SetUserCustomizable(false);
+    map.Initialize();
+
+    if (meramedia.RenderSettings.AutoFit)
+        map.ZoomToFit();
 };
 

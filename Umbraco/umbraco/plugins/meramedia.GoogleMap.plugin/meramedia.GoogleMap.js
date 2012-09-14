@@ -1,6 +1,7 @@
 ﻿/** 
 * TODO: Comment code a bit more descriptive
 * TODO: Clean up any prototype code (experimental/old unused)
+* TODO: Mark all internal methods with prefix "_"
 * TODO: Clean up and remove jquery dependency as much as possible
 *           - Remove the need of "find" to speed up things a bit
 * TODO: Clean up code copied from other extension (meramediaGoogleMaps.Context.SetDefaultLocation)
@@ -15,6 +16,7 @@ meramediaGoogleMaps.constants = {
 
 // Define context
 meramediaGoogleMaps.Context = (typeof meramediaGoogleMaps.Context == 'undefined' || meramediaGoogleMaps.Context == null) ? { maps: new Array()} : meramediaGoogleMaps.Context; ;
+meramediaGoogleMaps.Context.CurrentMarkerId = 0;
 meramediaGoogleMaps.Context.SetDefaultLocation = (meramediaGoogleMaps.Context.SetDefaultLocation == undefined) ? meramediaGoogleMaps.Context.SetDefaultLocation = function (container, map, currentCenter) {
     /* Copied code from http://our.umbraco.org/projects/backoffice-extensions/google-maps-datatype */
     var DefaultLocation = $('#' + container.id).find('input.mapSettings').val();
@@ -109,9 +111,10 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
     this.listeners = (listeners == undefined ? [] : listeners);
 
     // Contains all current markers, set to an empty array if nothing is set in the input
-    this.markers = (typeof _markers == 'undefined' || _markers == null) ? {} : _markers;
+    this.markers = {};
     this.numMarkers = 0;
 
+    this._updatedBounds = false;
     this._initialized = false;
 
     this.IsInitialized = function () {
@@ -128,13 +131,12 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
             latlngbounds.extend(this.searchMarkers[i].getPosition());
         }
 
+        // Fit the map to our calculated bounds
+        this._updatedBounds = true;
         this.map.fitBounds(latlngbounds);
-        this.map.setCenter(latlngbounds.getCenter());
-
-        // Max zoom for easier navigation
-        if (this.map.getZoom() > 15)
-            this.map.setZoom(15);
     };
+
+    this.ZoomToFit = this._ZoomToFit;
 
     this.RemoveMarker = function (marker, isSearchMarker) {
         if (typeof isSearchMarker == 'undefined' || isSearchMarker == null || !isSearchMarker) {
@@ -145,6 +147,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
             }
 
             self.numMarkers--;
+
         }
         else {
             // Search marker
@@ -153,12 +156,14 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         marker.setMap(null);
     };
 
-    this.CreateSearchMarker = function (position, title, map) {
+    // Creates a search marker with a given position, title and map
+    // [position] = latlng
+    // [title] = string, optional
+    this.CreateSearchMarker = function (position, title) {
         var searchMarker = this.CreateMarker(
             position,
             null,
             title,
-            map,
             {
                 clickable: true,
                 draggable: false,
@@ -176,7 +181,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
 
         // Right click -> Gets added to list
         google.maps.event.addListener(searchMarker, 'rightclick', function () {
-            self.CreateMarker(searchMarker.getPosition(), null, searchMarker.getTitle(), self.map);
+            self.CreateMarker(searchMarker.getPosition(), null, searchMarker.getTitle());
             self.RemoveMarker(searchMarker, true);
         });
     };
@@ -190,7 +195,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         this.searchMarkers = new Array();
     };
 
-    this.CreateMarker = function (position, name, title, map, _markerOptions, addToMap) {
+    this.CreateMarker = function (position, name, title, _markerOptions, addToMap) {
         var markerOptions = null;
         if (typeof addToMap == 'undefined' || addToMap == null) addToMap = true;
         if (typeof _markerOptions == 'undefined' || _markerOptions == null) {
@@ -217,7 +222,6 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         tempMarker.id = this._GetMarkerId();
         tempMarker.name = name;
         tempMarker._title = title;
-        var id = tempMarker.id;
 
         // Check if we want to add it to our map
         if (addToMap) {
@@ -227,24 +231,16 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
             }
 
             // Put it on our map
-            tempMarker.setMap(map);
+            tempMarker.setMap(this.map);
             // Add it so we can find it again 
             for (var i = 0; i < self.listeners.length; i++) {
                 self.listeners[i].MarkerCreatedEvent(self, tempMarker);
             }
 
-            // Bind events 
-            google.maps.event.addListener(tempMarker, 'rightclick', function () {
-                self.RemoveMarker(tempMarker);
-            });
-
-            google.maps.event.addListener(tempMarker, 'dragend', function (e) {
-                for (var i = 0; i < self.listeners.length; i++) {
-                    self.listeners[i].MarkerUpdatedEvent(self, tempMarker);
-                }
-            });
+            this.RegisterMarkerEvents(tempMarker);
 
             self.numMarkers++;
+            self.markers[tempMarker.id] = tempMarker;
         }
 
         return tempMarker;
@@ -252,6 +248,65 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
 
     this.Rerender = function (_mapOptions) {
         this.Initialize(true, _mapOptions);
+    };
+
+    this._RegisterMarkerEvents = function (marker) {
+        google.maps.event.addListener(marker, 'rightclick', function () {
+            self.RemoveMarker(marker);
+        });
+
+        google.maps.event.addListener(marker, 'dragend', function (e) {
+            for (var i = 0; i < self.listeners.length; i++) {
+                self.listeners[i].MarkerUpdatedEvent(self, marker);
+            }
+        });
+    };
+    this.RegisterMarkerEvents = this._RegisterMarkerEvents;
+
+    this.RegisterBaseEvents = function () {
+        google.maps.event.addListenerOnce(self.map, 'bounds_changed', function (event) {
+            if (self.numMarkers == 1 && self._updatedBounds) {
+                self._updatedBounds = false;
+                self.map.setZoom(10);
+            }
+        });
+    };
+
+    this._RegisterEvents = function () {
+        // Bind our events
+        google.maps.event.addListener(self.map, 'rightclick', function (e) {
+            self.CreateMarker(e.latLng, null, null);
+        });
+
+        google.maps.event.addListener(self.map, 'center_changed', function (e) {
+            for (var i = 0; i < self.listeners.length; i++) {
+                self.listeners[i].StateChangeEvent(self, "center_changed");
+            }
+        });
+
+        google.maps.event.addListener(self.map, 'zoom_changed', function (e) {
+            for (var i = 0; i < self.listeners.length; i++) {
+                self.listeners[i].StateChangeEvent(self, "zoom_changed");
+            }
+        });
+
+        google.maps.event.addListener(self.map, 'maptypeid_changed', function (e) {
+            for (var i = 0; i < self.listeners.length; i++) {
+                self.listeners[i].StateChangeEvent(self, "maptypeid_changed");
+            }
+        });
+    };
+    this.RegisterEvents = this._RegisterEvents;
+
+    this.SetUserCustomizable = function (setUserCustomizable) {
+        if (setUserCustomizable) {
+            this.RegisterEvents = this._RegisterEvents;
+            this.RegisterMarkerEvents = this._RegisterMarkerEvents;
+        }
+        else {
+            this.RegisterEvents = function () { }
+            this.RegisterMarkerEvents = function () { }
+        }
     };
 
     this.Initialize = function (rerender, _mapOptions) {
@@ -268,28 +323,8 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         // The active google map
         this.map = new google.maps.Map(document.getElementById(this.id), this.mapOptions);
 
-        // Bind our events
-        google.maps.event.addListener(self.map, 'rightclick', function (e) {
-            self.CreateMarker(e.latLng, null, null, self.map);
-        });
-
-        google.maps.event.addListener(self.map, 'center_changed', function (e) {
-            for (var i = 0; i < self.listeners.length; i++) {
-                self.listeners[i].StateChangeEvent(self);
-            }
-        });
-
-        google.maps.event.addListener(self.map, 'zoom_changed', function (e) {
-            for (var i = 0; i < self.listeners.length; i++) {
-                self.listeners[i].StateChangeEvent(self);
-            }
-        });
-
-        google.maps.event.addListener(self.map, 'maptypeid_changed', function (e) {
-            for (var i = 0; i < self.listeners.length; i++) {
-                self.listeners[i].StateChangeEvent(self);
-            }
-        });
+        this.RegisterEvents(); // Events in back
+        this.RegisterBaseEvents(); // Events in front/back
 
         self._initialized = true;
 
@@ -307,7 +342,6 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
                     null,
                     (this.Name == undefined ? null : this.Name),
                     null,
-                    self.map,
                     {
                         clickable: true,
                         draggable: true,
@@ -323,6 +357,6 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
     }
 
     this._GetMarkerId = function () {
-        return google.maps.Marker.CurrentMarkerId++;
+        return meramediaGoogleMaps.Context.CurrentMarkerId++;
     }
 };

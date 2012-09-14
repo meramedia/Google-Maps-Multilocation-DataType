@@ -67,14 +67,6 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         public int Height;
 
         /// <summary>
-        /// Not in use
-        /// </summary>
-        private GoogleMap()
-        {
-
-        }
-
-        /// <summary>
         /// Returns the static maps image with custom markers with optional size of the rendered image.
         /// If no size is given the default set map size will be used
         /// </summary>

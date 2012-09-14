@@ -39,7 +39,7 @@ function MapStateListener() {
                         var title = result.formatted_address;
                         var position = result.geometry.location;
 
-                        mapObject.CreateSearchMarker(position, title, self.map);
+                        mapObject.CreateSearchMarker(position, title);
                     });
 
                     mapObject._ZoomToFit();
