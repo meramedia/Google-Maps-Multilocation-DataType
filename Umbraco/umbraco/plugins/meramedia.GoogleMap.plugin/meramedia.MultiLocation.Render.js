@@ -2,25 +2,33 @@
  * Rendering method for a specfic map set in the meramedia.RenderSetting
  */
 meramedia.GoogleMaps.Render = function () {
-    var container = meramedia.RenderSettings.Container;
-
-    // Render map
-    var content = meramedia.RenderSettings.Object;
+    // Container
     var container = document.getElementById(meramedia.RenderSettings.Container);
-    var mapOptions = (content == null) ? null : { zoom: content.Zoom, mapTypeId: content.MapTypeId, center: new google.maps.LatLng(content.Center.split(',')[0], content.Center.split(',')[1]) };
-    var id = meramedia.RenderSettings.MapContainer;
+    var mapSettings = meramedia.RenderSettings.Object;
 
+    // Create all markers
     var markers = [];
-    if (content != null) {
-        $.each(content.Markers, function (i) {
+    if (mapSettings  != null) {
+        $.each(mapSettings.Markers, function (i) {
             markers.push(this);
         });
     }
+    else {
+        mapSettings = new MapSettings();
+    }
+
+    // Not user customizable as we are outside of the backoffice
+    mapSettings.UserCustomizable = false;
 
     // Create the map in our context
-    var map = new GoogleMap(id, mapOptions, null, null, markers);
+    var map = new GoogleMap(
+        meramedia.RenderSettings.MapContainer,
+        mapSettings,
+        null,
+        markers
+    );
+
     map.container = document.getElementById(meramedia.RenderSettings.MapContainer);
-    map.SetUserCustomizable(false);
     map.Initialize();
 
     if (meramedia.RenderSettings.AutoFit)

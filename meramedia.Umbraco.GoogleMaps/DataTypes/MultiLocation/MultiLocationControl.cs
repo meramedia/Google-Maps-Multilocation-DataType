@@ -83,7 +83,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 		/// Gets or sets the google map.
 		/// </summary>
 		/// <value>The google map.</value>
-		public GoogleMap GoogleMap { get; set; }
+        public InternalGoogleMapControl GoogleMap { get; set; }
 
 		/// <summary>
 		/// Gets or sets the hidden location.
@@ -176,7 +176,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             this.HiddenLocations.Attributes.Add( "class", "hiddenLocations" );
 
             // Get parsed data
-            GoogleMap map = (String.IsNullOrEmpty(Data)) ? null : JsonConvert.DeserializeObject<GoogleMap>( Data );
+            InternalGoogleMapControl map = ( String.IsNullOrEmpty( Data ) ) ? null : JsonConvert.DeserializeObject<InternalGoogleMapControl>( Data );
 
 			// --------------------------
             // Create the validators for the map interface
@@ -298,7 +298,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             // --------------------------
             // Google map
             // --------------------------
-			this.GoogleMap = new GoogleMap()
+            this.GoogleMap = new InternalGoogleMapControl()
 			{
 				CssClass = "map",
 				ID = string.Concat("map_", this.ClientID),

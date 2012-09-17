@@ -17,41 +17,32 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// <summary>
         /// All markers located on the map as a list
         /// </summary>
-        public List<LocationMarker> Markers;
-
-        /// <summary>
-        /// The zoom amount of the map
-        /// </summary>
-        public int Zoom;
-
-        /// <summary>
-        /// The center of the map as a string "longitude,latitude"
-        /// </summary>
-        public string Center;
-
-        /// <summary>
-        /// The map type as a string
-        /// </summary>
-        public string MapTypeId;
-
-        /// <summary>
-        /// The internal width, will be parsed to set the Width value.
-        /// </summary>
-        public string _Width
-        {
-            set
-            {
-                Width = ( String.IsNullOrEmpty( value ) ) ? 500 : Int32.Parse( value );
-            }
-        }
+        public List<GoogleMapMarker> Markers;
 
         /// <summary>
         /// The width of the map
         /// </summary>
         public int Width;
 
+
+        //// <summary>
+        /// The internal width, will be parsed to set the Width value.
+        //// </summary>
+        public string _Width
+        {
+            set
+            {
+                Width = ( String.IsNullOrEmpty( value ) ) ? 500 : Int32.Parse( value );
+            }
+        }
         /// <summary>
-        /// The internal height, will be parsed to set the Height value.
+        /// The height of the map
+        /// </summary>
+        public int Height;
+
+
+        /// <summary>
+        //// The internal height, will be parsed to set the Height value.
         /// </summary>
         public string _Height
         {
@@ -61,10 +52,29 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
             }
         }
 
+        [JsonProperty(PropertyName="MapOptions")]
+        public MapOptions Options;
+        public class MapOptions
+        {
+            [JsonProperty(PropertyName="center")]
+            public string Center;
+
+            [JsonProperty( PropertyName = "zoom" )]
+            public int Zoom;
+
+            [JsonProperty( PropertyName = "mapTypeId" )]
+            public string MapTypeId;
+        }
+
+
         /// <summary>
-        /// The height of the map
+        /// Returns a simple iframe URL
         /// </summary>
-        public int Height;
+        /// <returns>Iframe url, not the iframe object</returns>
+        public String GetIframeUrl( String center = null )
+        {
+            return "http://maps.google.se/maps?q=" + ( !String.IsNullOrEmpty( center ) ? center : Options.Center ) + "&amp;iwloc=near&amp;output=embed";
+        }
 
         /// <summary>
         /// Returns the static maps image with custom markers with optional size of the rendered image.
@@ -72,8 +82,9 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// </summary>
         /// <param name="width">The width of the image</param>
         /// <param name="height">The height of the image</param>
+        /// <param name="center">The center of the map as a string with "longitude,latitude"</param>
         /// <returns>The url to the generated image</returns>
-        public String GetStaticImageUrl( int? width, int? height )
+        public String GetStaticImageUrl( int? width = null, int? height = null, String center = null )
         {
             // Create our base url for the custom icons url
             String baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Host + ( HttpContext.Current.Request.Url.IsDefaultPort ? String.Empty :  ":" + HttpContext.Current.Request.Url.Port ); //umbraco.library.NiceUrl( -1 ).Replace( ".aspx", "/" ); 
@@ -90,11 +101,11 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
 
             return String.Format( 
                 "http://maps.googleapis.com/maps/api/staticmap?center={0}&zoom={1}&size={2}x{3}&maptype={4}&sensor=false&{5}", 
-                this.Center, 
-                this.Zoom, 
+                (!String.IsNullOrEmpty( center ) ? center :  this.Options.Center), 
+                this.Options.Zoom, 
                 ( width.HasValue ? width.Value : this.Width ), 
                 ( height.HasValue ? height.Value : this.Height ), 
-                this.MapTypeId, 
+                this.Options.MapTypeId, 
                 ( markers.Length > 0 ? markers.Substring( 0, markers.Length - 1 ) : String.Empty ) 
             );
         }
@@ -106,6 +117,8 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// <returns></returns>
         public static GoogleMap Parse( String jsonString )
         {
+            if( String.IsNullOrEmpty( jsonString ) )
+                return null;
             return JsonConvert.DeserializeObject<GoogleMap>( jsonString );
         }
 

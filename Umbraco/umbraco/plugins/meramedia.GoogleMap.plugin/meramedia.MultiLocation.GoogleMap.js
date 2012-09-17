@@ -13,7 +13,7 @@ function MapStateListener() {
         mapObject.markerList = $(mapObject.container).find('[id^=markerList]');
 
         // Set location
-        meramediaGoogleMaps.Context.SetDefaultLocation(mapObject.container, mapObject.map, mapObject.mapOptions.center);
+        meramediaGoogleMaps.Context.SetDefaultLocation(mapObject.container, mapObject.map, mapObject.settings.MapOptions.center);
 
         // Bind Google autocomplete search
         var input = $(mapObject.container).find('input.place')[0];
@@ -246,9 +246,9 @@ function MapStateListener() {
         var temp = [];
         var map = mapObject.map;
         var mapSettings = new MapSettings();
-        mapSettings.Zoom = map.getZoom();
-        mapSettings.Center = map.getCenter().lat() + "," + map.getCenter().lng();
-        mapSettings.MapTypeId = map.getMapTypeId();
+        mapSettings.MapOptions.zoom = map.getZoom();
+        mapSettings.MapOptions.center = map.getCenter().lat() + "," + map.getCenter().lng();
+        mapSettings.MapOptions.mapTypeId = map.getMapTypeId();
         mapSettings._Width = $(mapObject.container).find('input.mapWidth').val();
         mapSettings._Height = $(mapObject.container).find('input.mapHeight').val();
 
@@ -277,28 +277,27 @@ function StartApplication() {
     $('div.gmapContainer').each(function () {
         var id = $('div.map', this).attr('id');
 
+        // Contains "backoffice" settings
         var settings = $(this).find('input.mapSettings').val();
+
+        // Contains our saved markers etc.
         var content = $(this).find('input.hiddenLocations').val();
 
+        console.log(content);
         if (content != null && content != '') {
             content = JSON.parse(content);
         }
         else {
-            content = null;
+            content = new MapSettings();
         }
 
-        var mapOptions = (content == null) ? null : {
-            zoom: content.Zoom,
-            mapTypeId: content.MapTypeId,
-            center: new google.maps.LatLng(content.Center.split(',')[0],
-                content.Center.split(',')[1])
-        };
+        // Set our backoffice settings
+        content.BackOfficeSettings = JSON.parse(settings);
 
         // Create the map
         meramediaGoogleMaps.Context.maps[id] = new GoogleMap(
             id,
-            mapOptions,
-            (typeof settings == 'undefined' ? null : JSON.parse(settings)),
+            content, //(typeof settings == 'undefined' ? null : JSON.parse(settings)),
             [new MapStateListener(this)],
             (content == null ? null : content.Markers)
         );

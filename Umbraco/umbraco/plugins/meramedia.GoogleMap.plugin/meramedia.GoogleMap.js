@@ -46,11 +46,17 @@ meramediaGoogleMaps.Context.SetDefaultLocation = (meramediaGoogleMaps.Context.Se
 
 function MapSettings() {
     this.Markers = null;
-    this.Zoom = 12;
-    this.Center = "0,0";
+    this.MapOptions = {
+        zoom: 12,
+        center: "0,0",
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
     this._Width = null;
     this._Height = null;
     this.MapTypeId = google.maps.MapTypeId.ROADMAP;
+    
+    // True = movable markers, false = non-movable
+    this.UserCustomizable = true;
 }
 
 function LocationMarker() {
@@ -88,45 +94,48 @@ function LoadMapsApi(cb) {
 *
 * _markers Markers as a dictionary
 */
-function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_settings, /*Array*/listeners, /*Array*/ _markerAddOnInitialize) {
+function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*Array*/ _markerAddOnInitialize) {
     var self = this;
-    this.mapOptions = null;
-    if (typeof _mapOptions == 'undefined' || _mapOptions == null) {
-        this.mapOptions = {
-            zoom: 8,
-            center: new google.maps.LatLng(0, 0),
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-    }
-    else {
-        this.mapOptions = _mapOptions;
-    }
 
-    this.settings = (typeof _settings == 'undefined' || _settings == null) ? new MapSettings() : _settings;
+    this.settings = _settings;
+    if (_settings == undefined || _settings == null)
+        this.settings = new MapSettings();
+
+    this.settings.MapOptions.center = new google.maps.LatLng(this.settings.MapOptions.center.split(',')[0], this.settings.MapOptions.center.split(',')[1]);
+
+    // Markers to add on initialization
     this._markerAddOnInitialize = _markerAddOnInitialize;
 
+    // Id of the map object
     this.id = _id;
+
+    // All our search markers
     this.searchMarkers = new Array();
 
+    // Any listeners we have on ourselves
     this.listeners = (listeners == undefined ? [] : listeners);
 
     // Contains all current markers, set to an empty array if nothing is set in the input
     this.markers = {};
     this.numMarkers = 0;
 
+    // Private variables
     this._updatedBounds = false;
     this._initialized = false;
-
     this.IsInitialized = function () {
         return this._initialized;
     }
 
+    // Zooms the map to fit around the markers that are on the map
     this._ZoomToFit = function () {
         var latlngbounds = new google.maps.LatLngBounds();
+
+        // Fit for regular markers
         for (var key in this.markers) {
             latlngbounds.extend(this.markers[key].getPosition());
         }
 
+        // Fit for search markers
         for (var i = 0; i < this.searchMarkers.length; i++) {
             latlngbounds.extend(this.searchMarkers[i].getPosition());
         }
@@ -135,9 +144,9 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         this._updatedBounds = true;
         this.map.fitBounds(latlngbounds);
     };
-
     this.ZoomToFit = this._ZoomToFit;
 
+    // Remove a marker from the map
     this.RemoveMarker = function (marker, isSearchMarker) {
         if (typeof isSearchMarker == 'undefined' || isSearchMarker == null || !isSearchMarker) {
             delete this.markers[marker.id];
@@ -176,7 +185,10 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
             false
         );
 
+        // Add marker to map
         searchMarker.setMap(this.map);
+
+        // Add marker to our internal list
         this.searchMarkers.push(searchMarker);
 
         // Right click -> Gets added to list
@@ -186,6 +198,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         });
     };
 
+    // Remove all search markers from the map
     this._ClearSearchMarkers = function () {
         for (var i = 0; i < this.searchMarkers.length; i++) {
             if (this.searchMarkers != null)
@@ -195,6 +208,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         this.searchMarkers = new Array();
     };
 
+    // Create a new marker on the map
     this.CreateMarker = function (position, name, title, _markerOptions, addToMap) {
         var markerOptions = null;
         if (typeof addToMap == 'undefined' || addToMap == null) addToMap = true;
@@ -246,10 +260,12 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         return tempMarker;
     }
 
+    // Rerender the map 
     this.Rerender = function (_mapOptions) {
         this.Initialize(true, _mapOptions);
     };
 
+    // Register marker events
     this._RegisterMarkerEvents = function (marker) {
         google.maps.event.addListener(marker, 'rightclick', function () {
             self.RemoveMarker(marker);
@@ -263,6 +279,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
     };
     this.RegisterMarkerEvents = this._RegisterMarkerEvents;
 
+    // Register base events that we will always need, even if the map is not user customizable
     this.RegisterBaseEvents = function () {
         google.maps.event.addListenerOnce(self.map, 'bounds_changed', function (event) {
             if (self.numMarkers == 1 && self._updatedBounds) {
@@ -272,6 +289,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         });
     };
 
+    // Register events on the map
     this._RegisterEvents = function () {
         // Bind our events
         google.maps.event.addListener(self.map, 'rightclick', function (e) {
@@ -298,6 +316,8 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
     };
     this.RegisterEvents = this._RegisterEvents;
 
+    // Set the user customizable option. If not customizable we will not
+    // be able to move markers etc. Will not register any new events on markers
     this.SetUserCustomizable = function (setUserCustomizable) {
         if (setUserCustomizable) {
             this.RegisterEvents = this._RegisterEvents;
@@ -309,19 +329,25 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         }
     };
 
+    // Initializes the Google map
     this.Initialize = function (rerender, _mapOptions) {
         if (rerender == null || rerender == undefined)
             rerender = false;
 
+        // Skip initialization if we already are past this
         if (this.IsInitialized() && !rerender)
             return;
 
         if (rerender) {
-            self.mapOptions = _mapOptions;
+            self.settings.MapOptions = _mapOptions;
+            //self.mapOptions = _mapOptions;
         }
 
+        // set customizable setting
+        this.SetUserCustomizable(this.settings.UserCustomizable);
+
         // The active google map
-        this.map = new google.maps.Map(document.getElementById(this.id), this.mapOptions);
+        this.map = new google.maps.Map(document.getElementById(this.id), this.settings.MapOptions);
 
         this.RegisterEvents(); // Events in back
         this.RegisterBaseEvents(); // Events in front/back
@@ -344,7 +370,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
                     null,
                     {
                         clickable: true,
-                        draggable: true,
+                        draggable: self.settings.UserCustomizable,
                         position: new google.maps.LatLng(this.Position.split(',')[0], this.Position.split(',')[1]),
                         title: this.Title,
                         visible: true,
@@ -356,6 +382,7 @@ function GoogleMap( /* String */_id, /* Map options */_mapOptions, /*Object*/_se
         }
     }
 
+    // Returns an unique marker id..
     this._GetMarkerId = function () {
         return meramediaGoogleMaps.Context.CurrentMarkerId++;
     }
