@@ -15,7 +15,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 	/// <summary>
 	/// A control for Google Map to store multiple locations.
 	/// </summary>
-	[ValidationProperty("Data")]
+	[ValidationProperty("IsValid")]
 	public class MultiLocationControl : WebControl
 	{
 		/// <summary>
@@ -76,6 +76,17 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 				this.HiddenLocations.Value = value;
 			}
 		}
+
+        public string IsValid
+        {
+            get
+            {
+                var valid = "Valid";
+                if( !CheckValidity() )
+                      valid = String.Empty;
+                return valid;
+            }
+        }
 
 		public HtmlInputHidden HiddenLocations { get; set; }
 
@@ -379,5 +390,13 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 					args.IsValid = false;
 			}
 		}
+
+        bool CheckValidity()
+        {
+            Objects.GoogleMap map = JsonConvert.DeserializeObject<Objects.GoogleMap>( Data );
+            if( map.Markers.Count > 0 )
+                return true;
+            return false;
+        }
 	}
 }
