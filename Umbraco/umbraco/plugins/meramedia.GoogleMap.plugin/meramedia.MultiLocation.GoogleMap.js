@@ -209,7 +209,7 @@ function MapStateListener() {
         });
 
         if (selectedIcon != null) {
-            console.log(markerHtml.find('.dropdownSource').children('option[value=' + selectedIcon + ']'));
+            //console.log(markerHtml.find('.dropdownSource').children('option[value=' + selectedIcon + ']'));
             markerHtml.find('.dropdownSource').children('option:selected').attr('selected', false);
             markerHtml.find('.dropdownSource').children('option[value=' + selectedIcon + ']').attr('selected', true);
         }
@@ -283,7 +283,7 @@ function StartApplication() {
         // Contains our saved markers etc.
         var content = $(this).find('input.hiddenLocations').val();
 
-        console.log(content);
+        //console.log(content);
         if (content != null && content != '') {
             content = JSON.parse(content);
         }
@@ -324,23 +324,24 @@ function StartApplication() {
             $('#' + id).each(function () {
                 $('div.map', this).each(function () {
                     var id = jQuery(this).attr('id');
+                    var mapObject = meramediaGoogleMaps.Context.maps[id];
 
-                    if (!meramediaGoogleMaps.Context.maps[id].IsInitialized()) {
-                        meramediaGoogleMaps.Context.maps[id].Initialize();
+                    if (!mapObject.IsInitialized()) {
+                        mapObject.Initialize();
                     } else {
-                        var mapOptions = $(mapObject.container).find('input[id*=hiddenLocations_]').attr('value', val);
+                        var mapSettings = $(mapObject.container).find('input[id*=hiddenLocations_]').attr('value');
 
-                        if (mapOptions != undefined && mapOptions != null && mapOptions != '') {
-                            mapOptions = JSON.parse(mapOptions);
+                        if (mapSettings != undefined && mapSettings != null && mapSettings != '') {
+                            mapSettings = JSON.parse(mapSettings);
                         }
                         else {
-                            mapOptions = null;
+                            mapSettings = null;
                         }
 
-                        meramediaGoogleMaps.Context.maps[id].Rerender({
-                            zoom: mapOptions.Zoom,
-                            center: new google.maps.LatLng(mapOptions.Center.Split(',')[0], mapOptions.Center.Split(',')[1]),
-                            mapTypeId: meramediaGoogleMaps.Context.maps[id].map.getMapTypeId()
+                        mapObject.Rerender({
+                            zoom: mapSettings.MapOptions.zoom,
+                            center: new google.maps.LatLng(mapSettings.MapOptions.center.split(',')[0], mapSettings.MapOptions.center.split(',')[1]),
+                            mapTypeId: mapSettings.MapOptions.mapTypeId
                         });
                     }
                 });
