@@ -80,7 +80,7 @@ function MapStateListener() {
     /* Event */
     this.MarkerUpdatedEvent = function (mapObject, marker) {
         // Update marker location value
-        this._UpdateMarkerLocationValue(marker);
+        this._UpdateMarkerLocationValue(mapObject, marker);
 
         // Update storage value
         this._UpdateSaveValue(mapObject);
@@ -94,11 +94,11 @@ function MapStateListener() {
         this._AddMarkerTolist(mapObject, marker);
 
         // Find position value
-        this._UpdateMarkerLocationValue(marker);
+        this._UpdateMarkerLocationValue(mapObject, marker);
     };
 
     /* Internal method */
-    this._UpdateMarkerLocationValue = function (marker) {
+    this._UpdateMarkerLocationValue = function (mapObject, marker) {
         var geocoder = new google.maps.Geocoder();
         geocoder.geocode({ 'location': marker.getPosition() }, function (data, status) {
             if (status == google.maps.GeocoderStatus.OK) {
@@ -113,6 +113,8 @@ function MapStateListener() {
                     marker._title = result.formatted_address;
                     marker.setTitle(title);
                     marker.container.find('span.position').html(result.formatted_address);
+
+                    self._UpdateSaveValue(mapObject);
                 }
                 else {
                     marker.container.find('span.position').html(marker.getPosition());
