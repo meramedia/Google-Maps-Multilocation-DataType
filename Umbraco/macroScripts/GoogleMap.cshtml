@@ -11,6 +11,9 @@
 @using meramedia.Umbraco.GoogleMaps.Objects
 @using Newtonsoft.Json;
 @{
+    if( Parameter[ "MapPropertyName" ] == null )
+        return;
+    
     var json = Model.GetPropertyValue( Parameter[ "MapPropertyName" ].ToString() );
     GoogleMap map = GoogleMap.Parse( json );
 }
@@ -22,8 +25,9 @@
         LoadMapsApi('meramedia.GoogleMaps.Render');
     });
 </script>
+<script>!window.jQuery && document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"><\/script>')</script>
 <script>!window.GoogleMap && document.write('<script src="@(meramedia.Umbraco.GoogleMaps.Helpers.Constants.GoogleMapJavascript)"><\/script>');</script>
 <script>!window.meramedia.GoogleMaps.Render && document.write('<script src="@(meramedia.Umbraco.GoogleMaps.Helpers.Constants.RenderMultiLocationJavaScript)"><\/script>')</script>
 <div id="gmapContainer_@(Model.Id)" class="gmapContainer">
-    <div class="map" id="map_@(Model.Id)" style="width: @(map.Width)px; height:@(map.Height)px;"></div>
+    <div class="map" id="map_@(Model.Id)" style="width: @(map.Width); height:@(map.Height);"></div>
 </div>
