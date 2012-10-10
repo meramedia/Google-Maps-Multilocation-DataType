@@ -137,7 +137,7 @@ function MapStateListener() {
 
         // Create our list element
         // TODO: Maybe move this somewhere outside javascript in the future?
-        var element = ('<li id="' + markerId + '">' +
+        var element = ('<li id="google-marker-' + markerId + '">' +
                             '<div class="name">' +
                                 '<div class="label">' +
                                     '<label for="marker_' + markerId + '">Marker name</label>' +

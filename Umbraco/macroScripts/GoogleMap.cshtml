@@ -12,7 +12,9 @@
 @using Newtonsoft.Json;
 @{
     if( Parameter[ "MapPropertyName" ] == null )
+    {
         return;
+    }
     
     var json = Model.GetPropertyValue( Parameter[ "MapPropertyName" ].ToString() );
     GoogleMap map = GoogleMap.Parse( json );

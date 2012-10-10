@@ -75,7 +75,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// <returns>Iframe url, not the iframe object</returns>
         public String GetIframeUrl( String center = null )
         {
-            return "https://maps.google.se/maps?q=" + ( !String.IsNullOrEmpty( center ) ? center : Options.Center ) + "&amp;ie=UTF8&amp;t=m&amp;z=" + Options.Zoom + "&amp;&amp;output=embed";
+            return "https://maps.google.se/maps?q=" + ( !String.IsNullOrEmpty( center ) ? center : Options.Center ) + "&ie=UTF8&t=m&z=" + Options.Zoom + "&output=embed";
         }
 
         /// <summary>

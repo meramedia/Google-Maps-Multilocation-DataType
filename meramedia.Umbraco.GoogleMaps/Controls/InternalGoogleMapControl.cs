@@ -43,7 +43,7 @@ namespace meramedia.Umbraco.GoogleMaps.Controls
         /// <param name="src"></param>
         private void AddCss( String src )
         {
-            string tempLink= "<link rel='stylesheet' text='text/css' href='{0}' />";
+            string tempLink= "<link rel='stylesheet' type='text/css' href='{0}' />";
             LiteralControl include = new LiteralControl(String.Format(tempLink, src));
             ((System.Web.UI.HtmlControls.HtmlHead) Page.Header).Controls.Add(include);
         }
