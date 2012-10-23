@@ -1,24 +1,23 @@
 ﻿/** 
-* TODO: Comment code a bit more descriptive
 * TODO: Clean up any prototype code (experimental/old unused)
 * TODO: Mark all internal methods with prefix "_"
 * TODO: Clean up and remove jquery dependency as much as possible
 *           - Remove the need of "find" to speed up things a bit
-* TODO: Clean up code copied from other extension (meramediaGoogleMaps.Context.SetDefaultLocation)
+* TODO: Clean up code copied from other extension (meramedia.Context.SetDefaultLocation)
 */
 var LoadedApi = false;
-var meramediaGoogleMaps = (typeof meramediaGoogleMaps == 'undefined' || meramediaGoogleMaps == null) ? {} : meramediaGoogleMaps;
+var meramedia = (typeof meramedia == 'undefined' || meramedia == null) ? {} : meramedia;
 
-// Define constants
-meramediaGoogleMaps.constants = {
-    defaultSearchIcon: '/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png'
-}
+// Debug settings
+meramedia.debug = false;
+meramedia.log = (console == undefined || meramedia.debug != undefined && !meramedia.debug ? function (msg) { } : function (msg) { console.log(msg); });
+meramedia.warn = (console == undefined || meramedia.debug != undefined && !meramedia.debug ? function (msg) { } : function (msg) { console.warn(msg); });
 
 // Define context
-meramediaGoogleMaps.Context = (typeof meramediaGoogleMaps.Context == 'undefined' || meramediaGoogleMaps.Context == null) ? { maps: new Array()} : meramediaGoogleMaps.Context; ;
-meramediaGoogleMaps.Context.CurrentMarkerId = 0;
-meramediaGoogleMaps.Context.SetDefaultLocation = (meramediaGoogleMaps.Context.SetDefaultLocation == undefined) ? meramediaGoogleMaps.Context.SetDefaultLocation = function (container, map, currentCenter) {
-    /* Copied code from http://our.umbraco.org/projects/backoffice-extensions/google-maps-datatype */
+meramedia.Context = (typeof meramedia.Context == 'undefined' || meramedia.Context == null) ? { maps: new Array()} : meramedia.Context; ;
+meramedia.Context.CurrentMarkerId = 0;
+meramedia.Context.SetDefaultLocation = (meramedia.Context.SetDefaultLocation == undefined) ? meramedia.Context.SetDefaultLocation = function (container, map, currentCenter) {
+    /* Cloned code from http://our.umbraco.org/projects/backoffice-extensions/google-maps-datatype */
     var DefaultLocation = $('#' + container.id).find('input.mapSettings').val();
     if ( DefaultLocation != null && DefaultLocation != undefined ) {
         DefaultLocation = JSON.parse(DefaultLocation).defaultLocation;
@@ -42,8 +41,12 @@ meramediaGoogleMaps.Context.SetDefaultLocation = (meramediaGoogleMaps.Context.Se
     }
 
     map.setCenter(coords);
-} : meramediaGoogleMaps.Context.SetDefaultLocation;
+} : meramedia.Context.SetDefaultLocation;
 
+/*
+    Settings for the display of a map.
+    Also contains default settings of the map.
+*/
 function MapSettings() {
     this.Markers = null;
     this.MapOptions = {
@@ -51,20 +54,34 @@ function MapSettings() {
         center: "0,0",
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
+
     this._Width = null;
     this._Height = null;
     this.MapTypeId = google.maps.MapTypeId.ROADMAP;
-    
+
+    this.BackOfficeSettings = {
+        AllowCustomLinks: false,
+        MaxMarkers: -1,
+        MinMarkers: 0,
+        DefaultWidth: 500,
+        DefaultHeight: 500,
+    };
+
+    //this.BackOfficeSettings = {
+    //    DefaultSearchIcon: null
+    //}
+
     // True = movable markers, false = non-movable
     this.UserCustomizable = true;
 }
 
 function LocationMarker() {
-    this.Name = null;
-    this.Title = null;
-    this.Position = null;
-    this.Content = null;
-    this.Icon = null;
+    this.Name = null; // The name of the marker (custom name entered by the user)
+    this.Title = null; // Title of the marker (geographical position)
+    this.Position = null; // Position of the marker
+    this.Content = null; // TODO: Not currently in use 
+    this.Icon = null; // Icon for marker
+    this.Link = null; // Link after click on marker on the map
 }
 
 // Load map api from Google
@@ -84,18 +101,18 @@ function LoadMapsApi(cb) {
         });
     }
     else {
-        alert("Already loaded Google Maps api");
+        meramedia.warn("Already loaded Google Maps api");
         cb();
     }
 }
 
-/**
-* Creates a Google map with the given identifiers
-*
-* _markers Markers as a dictionary
-*/
-function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*Array*/ _markerAddOnInitialize) {
-    var self = this;
+// Creates a Google map with the given identifiers
+// _id = id of the map object
+// _settings = The map settings object (see class:MapSettings)
+// listeners = state listeners (see class:MapStateListener)
+// _markerAddOnInitialize Markers as an array [marker, marker] etc.
+function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners, /*Array*/ _markerAddOnInitialize) {
+    var self = this; // View hack
 
     this.settings = _settings;
     if (_settings == undefined || _settings == null)
@@ -116,12 +133,11 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
     this.listeners = (listeners == undefined ? [] : listeners);
 
     // Contains all current markers, set to an empty array if nothing is set in the input
-    this.markers = {};
-    this.numMarkers = 0;
+    this.markers = {}; this.numMarkers = 0;
 
     // Private variables
     this._updatedBounds = false;
-    this._initialized = false;
+    this._initialized = false; // true = initialized the map, false = not initialized yet (need to call .Initialize())
     this.IsInitialized = function () {
         return this._initialized;
     }
@@ -147,7 +163,10 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
     this.ZoomToFit = this._ZoomToFit;
 
     // Remove a marker from the map
+    // [marker] = Google marker
+    // [isSearchMarker] = true/false depending if the marker is a search marker or regular marker
     this.RemoveMarker = function (marker, isSearchMarker) {
+        meramedia.log("[GoogleMaps] Removing marker " + marker.id + " from map");
         if (typeof isSearchMarker == 'undefined' || isSearchMarker == null || !isSearchMarker) {
             delete this.markers[marker.id];
 
@@ -156,10 +175,9 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
             }
 
             self.numMarkers--;
-
         }
         else {
-            // Search marker
+            // Search marker, nothing for me to do here!
         }
 
         marker.setMap(null);
@@ -177,10 +195,10 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
                 clickable: true,
                 draggable: false,
                 position: position,
-                title: title,
+                title: (title == null ? "" : title),
                 visible: true,
                 zIndex: 100,
-                icon: meramediaGoogleMaps.constants.defaultSearchIcon
+                icon: '/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png'//this.settings.BackOfficeSettings.DefaultSearchIcon
             },
             false
         );
@@ -210,6 +228,8 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
 
     // Create a new marker on the map
     this.CreateMarker = function (position, name, title, _markerOptions, addToMap) {
+        meramedia.log("[GoogleMaps] Creating marker " + name);
+
         var markerOptions = null;
         if (typeof addToMap == 'undefined' || addToMap == null) addToMap = true;
         if (typeof _markerOptions == 'undefined' || _markerOptions == null) {
@@ -217,7 +237,7 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
                 clickable: true,
                 draggable: true,
                 position: position,
-                title: title,
+                title: (title == null ? "" : title),
                 visible: true,
                 zIndex: 10
             };
@@ -239,7 +259,8 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
 
         // Check if we want to add it to our map
         if (addToMap) {
-            if (self.settings.maxMarkers != -1 && self.numMarkers >= self.settings.maxMarkers) {
+            meramedia.log("[GoogleMaps] Adding marker to the map");
+            if (self.settings.MaxMarkers != -1 && self.numMarkers >= self.settings.MaxMarkers) {
                 alert("You may only add " + self.numMarkers + " markers to the map");
                 return null;
             }
@@ -256,12 +277,16 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
             self.numMarkers++;
             self.markers[tempMarker.id] = tempMarker;
         }
+        else {
+            meramedia.warn("[GoogleMap] Skipping the process of adding the marker to the map");
+        }
 
         return tempMarker;
     }
 
     // Rerender the map 
     this.Rerender = function (_mapOptions) {
+        meramedia.log("[GoogleMap] Re-rendering the map...");
         this.Initialize(true, _mapOptions);
     };
 
@@ -319,28 +344,37 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
     // Set the user customizable option. If not customizable we will not
     // be able to move markers etc. Will not register any new events on markers
     this.SetUserCustomizable = function (setUserCustomizable) {
+        meramedia.warn("[GoogleMaps] Settings UserCustomizable to " + setUserCustomizable);
         if (setUserCustomizable) {
             this.RegisterEvents = this._RegisterEvents;
             this.RegisterMarkerEvents = this._RegisterMarkerEvents;
         }
         else {
+            meramedia.warn("[GoogleMaps] Unbinding RegisterEvents and RegisterMarkerEvents");
             this.RegisterEvents = function () { }
-            this.RegisterMarkerEvents = function () { }
+            this.RegisterMarkerEvents = function () {
+            }
         }
     };
 
     // Initializes the Google map
     this.Initialize = function (rerender, _mapOptions) {
+        meramedia.log("[GoogleMaps] Initializing map");
+
         if (rerender == null || rerender == undefined)
             rerender = false;
 
+        meramedia.log("[GoogleMaps] Rerender: " + rerender);
+
         // Skip initialization if we already are past this
-        if (this.IsInitialized() && !rerender)
+        if (this.IsInitialized() && !rerender) {
+            meramedia.log("[GoogleMaps] Skipping initialization, already intialized!");
             return;
+        }
 
         if (rerender) {
+            meramedia.log("[GoogleMaps] Re-rendering map");
             self.settings.MapOptions = _mapOptions;
-            //self.mapOptions = _mapOptions;
         }
 
         // set customizable setting
@@ -352,19 +386,26 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
         this.RegisterEvents(); // Events in back
         this.RegisterBaseEvents(); // Events in front/back
 
+        // Set initialized flag so that we don't initialize again
         self._initialized = true;
 
+        // If we are not re-rendering we must notify all listeners that our initialization process is done
+        // This must be done before the adding of the markers!
         if (!rerender) {
+            meramedia.log("[GoogleMaps] Notifying listeners about initalization DONE!");
             for (var i = 0; i < self.listeners.length; i++) {
                 self.listeners[i].MapInitializedEvent(self);
             }
         }
 
         // Add markers
-        if (this._markerAddOnInitialize != null && this._markerAddOnInitialize != undefined) {
+        if (!rerender && this._markerAddOnInitialize != null && this._markerAddOnInitialize != undefined) {
+            meramedia.log("[GoogleMaps] Adding markers to map from mapSettings");
+
             // Fetch markers from saved content
             $.each(this._markerAddOnInitialize, function () {
-                self.CreateMarker(
+                meramedia.log("[GoogleMaps] Creating marker at position " + this.Position);
+                var marker = self.CreateMarker(
                     null,
                     (this.Name == undefined ? null : this.Name),
                     null,
@@ -372,18 +413,35 @@ function GoogleMap( /* String */_id, /*Object*/_settings, /*Array*/listeners, /*
                         clickable: true,
                         draggable: self.settings.UserCustomizable,
                         position: new google.maps.LatLng(this.Position.split(',')[0], this.Position.split(',')[1]),
-                        title: this.Title,
+                        title: (this.Title == null ? "" : this.Title),
                         visible: true,
                         icon: (this.Icon == undefined) ? null : this.Icon,
-                        zIndex: 10
+                        zIndex: 10,
+                        link: (this.Link == undefined ? null : this.Link)
                     }
                 );
+
+                meramedia.log("[GoogleMaps] (" + marker.id + ") Created marker");
+
+                // Marker link
+                //marker.link = ;
+                marker.party = "Hello world";
+
+                // Should we move this to some other place and create two separate functions.
+                // However we should try and separate all backoffice and front settings...
+                // 1. Backoffice settings
+                // 2. Front settings
+                google.maps.event.addListener(marker, 'click', function () {
+                    for (var i = 0; i < self.listeners.length; i++) {
+                        self.listeners[i].MarkerLeftClickEvent(self, marker);
+                    }
+                });
             });
         }
     }
 
     // Returns an unique marker id..
     this._GetMarkerId = function () {
-        return meramediaGoogleMaps.Context.CurrentMarkerId++;
+        return meramedia.Context.CurrentMarkerId++;
     }
 };

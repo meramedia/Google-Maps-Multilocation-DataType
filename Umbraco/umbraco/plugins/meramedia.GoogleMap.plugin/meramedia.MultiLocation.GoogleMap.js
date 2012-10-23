@@ -13,7 +13,7 @@ function MapStateListener() {
         mapObject.markerList = $(mapObject.container).find('[id^=markerList]');
 
         // Set location
-        meramediaGoogleMaps.Context.SetDefaultLocation(mapObject.container, mapObject.map, mapObject.settings.MapOptions.center);
+        meramedia.Context.SetDefaultLocation(mapObject.container, mapObject.map, mapObject.settings.MapOptions.center);
 
         // Bind Google autocomplete search
         var input = $(mapObject.container).find('input.place')[0];
@@ -47,16 +47,16 @@ function MapStateListener() {
             });
         });
 
-        // Bind height/width values
-        $(mapObject.container).find('input.mapWidth, input.mapHeight').keyup(function () {
-            self._UpdateSaveValue(mapObject);
-        });
+        //// Bind height/width values
+        //$(mapObject.container).find('input.mapWidth, input.mapHeight').keyup(function () {
+        //    self._UpdateSaveValue(mapObject);
+        //});
     };
 
     /* Event */
     this.StateChangeEvent = function (mapObject) {
         // Update save state
-        this._UpdateSaveValue(mapObject);
+        //this._UpdateSaveValue(mapObject);
     };
 
     /* Event */
@@ -69,9 +69,10 @@ function MapStateListener() {
         this._AddMarkerTolist(mapObject, marker);
     };
 
+    /* Event */
     this.MarkerRemovedEvent = function (mapObject, marker) {
         // Update storage value
-        this._UpdateSaveValue(mapObject);
+        //this._UpdateSaveValue(mapObject);
 
         // Remove from list
         marker.container.remove();
@@ -83,9 +84,14 @@ function MapStateListener() {
         this._UpdateMarkerLocationValue(mapObject, marker);
 
         // Update storage value
-        this._UpdateSaveValue(mapObject);
+        //this._UpdateSaveValue(mapObject);
 
         // TODO: Update any other stuff needed
+    };
+
+    /* Event */
+    this.MarkerLeftClickEvent = function (mapObject, marker) {
+        // Do nothing atm
     };
 
     /* Event */
@@ -114,7 +120,7 @@ function MapStateListener() {
                     marker.setTitle(title);
                     marker.container.find('span.position').html(result.formatted_address);
 
-                    self._UpdateSaveValue(mapObject);
+                    //self._UpdateSaveValue(mapObject);
                 }
                 else {
                     marker.container.find('span.position').html(marker.getPosition());
@@ -125,6 +131,7 @@ function MapStateListener() {
 
     /* Internal method */
     this._AddMarkerTolist = function (mapObject, marker2) {
+        console.log(marker2.link);
         var map = mapObject.map;
         var markerId = marker2.id;
 
@@ -140,16 +147,36 @@ function MapStateListener() {
         var element = ('<li id="google-marker-' + markerId + '">' +
                             '<div class="name">' +
                                 '<div class="label">' +
-                                    '<label for="marker_' + markerId + '">Marker name</label>' +
+                                    '<label for="marker_' + markerId + '_name">Marker name</label>' +
                                         '<p>Specific name for the location, ex. "H&auml;lsans hus"</p>' +
                                 '</div>' +
                                 '<div>' +
-                                    '<input type="text" id="marker_' + markerId + '" name="name" value="">' +
+                                    '<input type="text" name="marker_' + markerId + '_name" value="' + (marker2.name != undefined && marker2.name != null ? marker2.name : '') + '">' +
                                 '</div>' +
                             '</div>' +
+                            (mapObject.settings.BackOfficeSettings.AllowCustomLinks ? 
+                            '<div class="link">' +
+                                '<div class="label">' + 
+                                    '<label for="marker_' + markerId + '_link">External link</label>' +
+                                '</div>' +
+                                '<div>' +
+                                    '<input type="text" name="marker_' + markerId + '_link" value="' + (marker2.link != null ? marker2.link : '') + '">' +
+                                '</div>' +
+                            '</div>'
+                            : '') +
+                            //(mapObject.settings.BackOfficeSettings.AllowCustomContent ?
+                            //'<div class="link">' +
+                            //    '<div class="label">' +
+                            //        '<label for="marker_' + markerId + '_content">Popup content</label>' +
+                            //    '</div>' +
+                            //    '<div>' +
+                            //        '<input type="text" name="marker_' + markerId + '_content" value="' + (marker2.content != null ? marker2.content : '') + '">' +
+                            //    '</div>' +
+                            //'</div>'
+                            //: '') +
                             '<div>' +
                                 '<div class="label">' +
-                                    '<label for="marker_0">Position</label>' +
+                                    '<label for="marker_' + markerId + '_position">Position</label>' +
                                 '</div>' +
                                 '<div>' +
                                     '<a class="changePosition" title="Click to go to marker" id="' + markerId + '" data-position="' + marker2.getPosition().lat() + "," + marker2.getPosition().lng() + '" href="#" title="Remove marker from map">' +
@@ -159,10 +186,10 @@ function MapStateListener() {
                             '</div>' +
                             '<div>' +
                                 '<div class="label">' +
-                                    '<label for="marker_0">Marker icon</label>' +
+                                    '<label for="marker_' + markerId + '_icon">Marker icon</label>' +
                                 '</div>' +
                                 '<div>' +
-                                    '<select class="dropdownSource">' +
+                                    '<select class="dropdownSource" name="marker_' + markerId + '_icon">' +
                                         '<option selected="selected" value="default">Default</option>');
 
         var selectedIcon = null;
@@ -205,10 +232,27 @@ function MapStateListener() {
         });
 
         // Change in name value
-        markerHtml.find('input[name=name]').keyup(function () {
+        markerHtml.find('input[name=marker_' + markerId + '_name]').keyup(function () {
             marker2.name = $(this).val();
-            self._UpdateSaveValue(mapObject);
+            //self._UpdateSaveValue(mapObject);
         });
+
+        // Change in link value
+        markerHtml.find('input[name=marker_' + markerId + '_link]').keyup(function () {
+            marker2.link = $(this).val();
+            //self._UpdateSaveValue(mapObject);
+        });
+
+        // Only register event if we really need it
+        if (mapObject.HasRegisteredUpdate == undefined || !mapObject.HasRegisteredUpdate)
+        {
+            $('input[class*=editorIcon]').click(function () {
+                self._UpdateSaveValue(mapObject);
+            });
+
+            mapObject.HasRegisteredUpdate = true; // TODO: Move to a better "location"
+        }
+        
 
         if (selectedIcon != null) {
             //console.log(markerHtml.find('.dropdownSource').children('option[value=' + selectedIcon + ']'));
@@ -232,7 +276,7 @@ function MapStateListener() {
                 $(this).parent().children('span.iconPreview').html('<img src="' + iconImage + '"/>');
 
             // Update internal values
-            self._UpdateSaveValue(mapObject);
+            //self._UpdateSaveValue(mapObject);
         });
 
         mapObject.markers[markerId] = marker2;
@@ -240,7 +284,7 @@ function MapStateListener() {
 
         marker2.container = markerHtml;
 
-        self._UpdateSaveValue(mapObject);
+        //self._UpdateSaveValue(mapObject);
     };
 
     /* Internal method */
@@ -261,6 +305,7 @@ function MapStateListener() {
             obj.Title = marker._title; //marker.getTitle();
             obj.Icon = (marker.getIcon() == undefined || marker.getIcon == null) ? null : marker.getIcon();
             obj.Name = marker.name;
+            obj.Link = marker.link;
             temp.push(obj);
         }
 
@@ -282,6 +327,8 @@ function StartApplication() {
         // Contains "backoffice" settings
         var settings = $(this).find('input.mapSettings').val();
 
+        //console.log(JSON.parse(settings));
+
         // Contains our saved markers etc.
         var content = $(this).find('input.hiddenLocations').val();
 
@@ -297,14 +344,14 @@ function StartApplication() {
         content.BackOfficeSettings = JSON.parse(settings);
 
         // Create the map
-        meramediaGoogleMaps.Context.maps[id] = new GoogleMap(
+        meramedia.Context.maps[id] = new GoogleMap(
             id,
-            content, //(typeof settings == 'undefined' ? null : JSON.parse(settings)),
+            content,
             [new MapStateListener(this)],
             (content == null ? null : content.Markers)
         );
 
-        meramediaGoogleMaps.Context.maps[id].container = this;
+        meramedia.Context.maps[id].container = this;
     });
 
     // Render only visible map
@@ -313,7 +360,7 @@ function StartApplication() {
     activeTabContent.ready(function () {
         for (var i = 0; i < activeTabContent.length; i++) {
             var activeId = $(activeTabContent[i]).attr('id');
-            meramediaGoogleMaps.Context.maps[activeId].Initialize();
+            meramedia.Context.maps[activeId].Initialize();
         }
     });
 
@@ -326,7 +373,7 @@ function StartApplication() {
             $('#' + id).each(function () {
                 $('div.map', this).each(function () {
                     var id = jQuery(this).attr('id');
-                    var mapObject = meramediaGoogleMaps.Context.maps[id];
+                    var mapObject = meramedia.Context.maps[id];
 
                     if (!mapObject.IsInitialized()) {
                         mapObject.Initialize();

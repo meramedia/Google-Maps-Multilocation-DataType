@@ -25,9 +25,9 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         public int Width;
 
 
-        //// <summary>
+        /// <summary>
         /// The internal width, will be parsed to set the Width value.
-        //// </summary>
+        /// </summary>
         public string _Width
         {
             set
@@ -66,6 +66,33 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
             public string MapTypeId;
         }
 
+        [JsonProperty(PropertyName = "CoreSettings")]
+        public CoreSettings OtherSettings;
+        public class CoreSettings
+        {
+            [JsonProperty(PropertyName = "CoreSettings")]
+            public string DefaultSearchIcon;
+
+            [JsonProperty(PropertyName="AllowCustomLink")]
+            public bool AllowCustomLink { get; set; }
+        }
+
+        public GoogleMap()
+        {
+            Markers = new List<GoogleMapMarker>();
+
+            _Width = "500";
+            _Height = "500";
+            
+            Options = new MapOptions();
+            Options.Center = Helpers.Constants.DefaultCoordinates;
+            Options.Zoom = 7;
+            Options.MapTypeId = "roadmap";
+
+            OtherSettings = new CoreSettings();
+            OtherSettings.DefaultSearchIcon = Helpers.Constants.DefaultSearchIcon;
+            OtherSettings.AllowCustomLink = true;
+        }
 
         /// <summary>
         /// Returns a simple iframe URL
@@ -103,12 +130,12 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
 
             return String.Format( 
                 "http://maps.googleapis.com/maps/api/staticmap?center={0}&zoom={1}&size={2}x{3}&maptype={4}&sensor=false&{5}", 
-                (!String.IsNullOrEmpty( center ) ? center :  this.Options.Center), 
-                this.Options.Zoom, 
-                ( width.HasValue ? width.Value : this.Width ), 
-                ( height.HasValue ? height.Value : this.Height ), 
-                this.Options.MapTypeId, 
-                ( markers.Length > 0 ? markers.Substring( 0, markers.Length - 1 ) : String.Empty ) 
+                (!String.IsNullOrEmpty( center ) ? center :  this.Options.Center), // Center as "longitude,latitude"
+                this.Options.Zoom,  // Zoom level
+                ( width.HasValue ? width.Value : this.Width ), // Map width
+                ( height.HasValue ? height.Value : this.Height ),  // Map height
+                this.Options.MapTypeId,  // Map type. ex. "Roadmap"
+                ( markers.Length > 0 ? markers.Substring( 0, markers.Length - 1 ) : String.Empty ) // Map markers 
             );
         }
 
@@ -125,12 +152,21 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         }
 
         /// <summary>
+        /// Serializes the Map object to a json string
+        /// </summary>
+        /// <returns></returns>
+        public String Serialize()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        /// <summary>
         /// Convert the GoogleMap object to a json representation
         /// </summary>
         /// <returns>The GoogleMap object as a json string</returns>
         public override String ToString()
         {
-            return JsonConvert.SerializeObject( this );
+            return this.Serialize();
         }
     }
 }

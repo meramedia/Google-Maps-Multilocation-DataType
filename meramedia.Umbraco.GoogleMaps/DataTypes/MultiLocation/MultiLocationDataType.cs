@@ -96,6 +96,9 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
         [DataEditorSetting( "Minimum number of markers", description="Minimum number of markers a user may select. A value of -1 will disable this validation", defaultValue = Constants.DefaultMinNumberOfMarkers, type = typeof( TextField ) )]
         public string MinNumberOfMarkers { get; set; }
 
+        [DataEditorSetting( "Allow custom links", description="Allow linking markers to links leading to either external sites or content", defaultValue = true, type = typeof( CheckBox ) )]
+        public string AllowCustomLinks { get; set; }
+
 		/// <summary>
 		/// Handles the Init event of the m_Control control.
 		/// </summary>
@@ -116,6 +119,8 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             int MaxMarkers = -1;
             Int32.TryParse( MaxNumberOfMarkers, out MaxMarkers );
             this.m_Control.MaxMarkers = MaxMarkers;
+
+            this.m_Control.AllowCustomLinks = Boolean.Parse(AllowCustomLinks);
 
             this.m_Control.MarkersFolder = (String.IsNullOrEmpty(CustomMarkers) ? -2 : Int32.Parse( CustomMarkers ));
 		}

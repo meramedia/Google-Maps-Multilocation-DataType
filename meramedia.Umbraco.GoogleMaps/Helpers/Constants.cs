@@ -14,7 +14,8 @@
 
 		/* Resources */
         public const string PluginResourceDir = "/umbraco/plugins/meramedia.GoogleMap.plugin/";
-		
+        public const string DefaultSearchIcon = "/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png";
+
         // CSS
         public const string GoogleMapCss = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.css";
 
@@ -22,6 +23,7 @@
         public const string GoogleMapJavascript = PluginResourceDir + "meramedia.GoogleMap.js";
 		public const string MultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.js";
         public const string RenderMultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.Render.js";
+        public const string FrontOfficeMapStateListenerJavascript = PluginResourceDir + "meramedia.MultiLocation.Frontoffice.Listener.js";
 
 		/* Helpers */
 		internal const char Comma = ',';
@@ -32,8 +34,8 @@
 		/* Default values */
 		public const string DefaultMinNumberOfMarkers = "-1";
 		public const string DefaultMaxNumberOfMarkers = "-1";
-		internal const string DefaultLatitude = "22.146975527508516";
-		internal const string DefaultLongitude = "65.58426360844263";
-		internal const string DefaultCoordinates = DefaultLongitude + "," +  DefaultLatitude;
+		public const string DefaultLatitude = "22.146975527508516";
+		public const string DefaultLongitude = "65.58426360844263";
+		public const string DefaultCoordinates = DefaultLongitude + "," +  DefaultLatitude;
 	}
 }

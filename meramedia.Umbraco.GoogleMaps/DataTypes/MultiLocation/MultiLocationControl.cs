@@ -44,8 +44,16 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 		/// <value>The default zoom.</value>
 		public string DefaultZoom { get; set; }
 
+
+        /// <summary>
+        /// Min markers for the current datatype
+        /// </summary>
 		public int MinMarkers { get; set; }
 
+
+        /// <summary>
+        /// Max markers for the current data type
+        /// </summary>
 		public int MaxMarkers { get; set; }
 
 		/// <summary>
@@ -59,6 +67,12 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 		/// </summary>
 		/// <value>The width of the map.</value>
 		public string MapWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the allow custom link flag.
+        /// If true users will be able to link markers to external links
+        /// </summary>
+        public bool AllowCustomLinks { get; set; }
 
 		/// <summary>
 		/// Gets or sets the data.
@@ -77,6 +91,9 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 			}
 		}
 
+        /// <summary>
+        /// Validation object
+        /// </summary>
         public string IsValid
         {
             get
@@ -88,6 +105,9 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             }
         }
 
+        /// <summary>
+        /// Hidden locations settings
+        /// </summary>
 		public HtmlInputHidden HiddenLocations { get; set; }
 
 		/// <summary>
@@ -245,6 +265,10 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             this.HeightNumberValidator.Display = ValidatorDisplay.Dynamic;
 
             // --------------------------
+            // External link
+            // --------------------------
+
+            // --------------------------
             // Style the map
             // --------------------------
 			this.Attributes.Add( "style", "width:" + MapWidth + "px;" );
@@ -335,7 +359,18 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 			// Settings such as minimum locations and maximum locations (markers)
 			var divSettings = new HtmlGenericControl( "div" );
 			var SettingsList = new HtmlInputHidden();
-			SettingsList.Value = "{\"minMarkers\":" + MinMarkers + ",\"maxMarkers\":" + MaxMarkers + ",\"defaultLocation\":\"" + String.Concat( this.DefaultLocation, meramedia.Umbraco.GoogleMaps.Helpers.Constants.Comma, this.DefaultZoom ) + "\",\"defaultWidth\":" + MapWidth + ",\"defaultHeight\":" + MapHeight + "}";
+
+            // Create our settings list with the values that we have
+            var settings = new {
+                               MinMarkers = MinMarkers,
+                               MaxMarkers = MaxMarkers,
+                               DefaultLocation = String.Concat( this.DefaultLocation, meramedia.Umbraco.GoogleMaps.Helpers.Constants.Comma, this.DefaultZoom ),
+                               DefaultWidth = MapWidth,
+                               DefaultHeight = MapHeight,
+                               AllowCustomLinks = AllowCustomLinks
+                           };
+
+            SettingsList.Value = JsonConvert.SerializeObject(settings);
 			SettingsList.Attributes.Add( "class", "mapSettings" );
 			this.Controls.Add( SettingsList );
 
@@ -370,7 +405,10 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 			if( MinMarkers != -1 )
 			{
 				Objects.GoogleMap map = JsonConvert.DeserializeObject<Objects.GoogleMap>( Data );
-				if( map.Markers.Count < MinMarkers )
+                if(MinMarkers == 0)
+                    return;
+
+				if( map.Markers == null || map.Markers.Count < MinMarkers )
 					args.IsValid = false;
 			}
 		}
