@@ -131,7 +131,6 @@ function MapStateListener() {
 
     /* Internal method */
     this._AddMarkerTolist = function (mapObject, marker2) {
-        console.log(marker2.link);
         var map = mapObject.map;
         var markerId = marker2.id;
 
@@ -234,13 +233,11 @@ function MapStateListener() {
         // Change in name value
         markerHtml.find('input[name=marker_' + markerId + '_name]').keyup(function () {
             marker2.name = $(this).val();
-            //self._UpdateSaveValue(mapObject);
         });
 
         // Change in link value
         markerHtml.find('input[name=marker_' + markerId + '_link]').keyup(function () {
             marker2.link = $(this).val();
-            //self._UpdateSaveValue(mapObject);
         });
 
         // Only register event if we really need it
@@ -297,6 +294,8 @@ function MapStateListener() {
         mapSettings.MapOptions.mapTypeId = map.getMapTypeId();
         mapSettings._Width = $(mapObject.container).find('input.mapWidth').val();
         mapSettings._Height = $(mapObject.container).find('input.mapHeight').val();
+        
+        mapSettings.CoreSettings.AllowCustomLinks = mapObject.settings.BackOfficeSettings.AllowCustomLinks;
 
         for (var key in mapObject.markers) {
             var marker = mapObject.markers[key];

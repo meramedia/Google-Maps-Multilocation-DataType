@@ -14,7 +14,8 @@ meramedia.log = (console == undefined || meramedia.debug != undefined && !merame
 meramedia.warn = (console == undefined || meramedia.debug != undefined && !meramedia.debug ? function (msg) { } : function (msg) { console.warn(msg); });
 
 // Define context
-meramedia.Context = (typeof meramedia.Context == 'undefined' || meramedia.Context == null) ? { maps: new Array()} : meramedia.Context; ;
+meramedia.Context = (typeof meramedia.Context == 'undefined' || meramedia.Context == null) ? { maps: new Array() } : meramedia.Context;
+meramedia.Context.DefaultSearchIcon = "/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png";
 meramedia.Context.CurrentMarkerId = 0;
 meramedia.Context.SetDefaultLocation = (meramedia.Context.SetDefaultLocation == undefined) ? meramedia.Context.SetDefaultLocation = function (container, map, currentCenter) {
     /* Cloned code from http://our.umbraco.org/projects/backoffice-extensions/google-maps-datatype */
@@ -48,6 +49,8 @@ meramedia.Context.SetDefaultLocation = (meramedia.Context.SetDefaultLocation == 
     Also contains default settings of the map.
 */
 function MapSettings() {
+    // Mixed settings,
+    // information about the map
     this.Markers = null;
     this.MapOptions = {
         zoom: 12,
@@ -59,17 +62,19 @@ function MapSettings() {
     this._Height = null;
     this.MapTypeId = google.maps.MapTypeId.ROADMAP;
 
+    // Settings valid for the frontoffice and backoffice
+    this.CoreSettings = {
+        AllowCustomLinks: false // Stored to map
+    }
+
+    // Settings valid in the backoffice only!
     this.BackOfficeSettings = {
-        AllowCustomLinks: false,
+        AllowCustomLinks: false, // Retrieved from backoffice
         MaxMarkers: -1,
         MinMarkers: 0,
         DefaultWidth: 500,
         DefaultHeight: 500,
     };
-
-    //this.BackOfficeSettings = {
-    //    DefaultSearchIcon: null
-    //}
 
     // True = movable markers, false = non-movable
     this.UserCustomizable = true;
@@ -198,7 +203,7 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
                 title: (title == null ? "" : title),
                 visible: true,
                 zIndex: 100,
-                icon: '/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png'//this.settings.BackOfficeSettings.DefaultSearchIcon
+                icon: meramedia.Context.DefaultSearchIcon
             },
             false
         );

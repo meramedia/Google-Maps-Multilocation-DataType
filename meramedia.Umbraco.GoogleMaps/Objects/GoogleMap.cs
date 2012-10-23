@@ -70,11 +70,11 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         public CoreSettings OtherSettings;
         public class CoreSettings
         {
-            [JsonProperty(PropertyName = "CoreSettings")]
-            public string DefaultSearchIcon;
+            //[JsonIgnore]// JsonProperty(PropertyName = "DefaultSearchIcon")]
+            //public string DefaultSearchIcon;
 
-            [JsonProperty(PropertyName="AllowCustomLink")]
-            public bool AllowCustomLink { get; set; }
+            [JsonProperty(PropertyName="AllowCustomLinks")]
+            public bool AllowCustomLinks { get; set; }
         }
 
         public GoogleMap()
@@ -90,8 +90,8 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
             Options.MapTypeId = "roadmap";
 
             OtherSettings = new CoreSettings();
-            OtherSettings.DefaultSearchIcon = Helpers.Constants.DefaultSearchIcon;
-            OtherSettings.AllowCustomLink = true;
+            //OtherSettings.DefaultSearchIcon = Helpers.Constants.DefaultSearchIcon;
+            OtherSettings.AllowCustomLinks = true;
         }
 
         /// <summary>

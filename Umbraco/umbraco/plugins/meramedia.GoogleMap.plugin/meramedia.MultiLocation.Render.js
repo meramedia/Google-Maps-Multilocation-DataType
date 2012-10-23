@@ -23,6 +23,9 @@ function RenderFrontendMap() {
     if (mapSettings != null) {
         $.each(mapSettings.Markers, function (i) {
             meramedia.log("[GoogleMaps] Adding marker to map " + this.Name + "(" + this.Position + ")");
+            if (!mapSettings.CoreSettings.AllowCustomLinks) {
+                this.Link = null;
+            }
             markers.push(this);
         });
     }

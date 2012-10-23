@@ -14,7 +14,7 @@
 
 		/* Resources */
         public const string PluginResourceDir = "/umbraco/plugins/meramedia.GoogleMap.plugin/";
-        public const string DefaultSearchIcon = "/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png";
+        //public const string DefaultSearchIcon = "/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png";
 
         // CSS
         public const string GoogleMapCss = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.css";
