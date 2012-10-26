@@ -45,7 +45,6 @@
             MapSettings: @Html.Raw(map.ToString())
       };
 
-  @*    var meramedia = { GoogleMaps: {}, RenderSettings: { AutoFit: true, Container: "gmapContainer_@(Model.Id)", MapContainer : "map_@(Model.Id)", "Object": @Html.Raw( map.ToString() ) } };*@
       $(function () {
           LoadMapsApi('RenderFrontendMap');
       });
