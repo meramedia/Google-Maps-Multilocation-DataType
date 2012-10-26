@@ -1,11 +1,10 @@
 ﻿/** 
-* TODO: Clean up any prototype code (experimental/old unused)
 * TODO: Mark all internal methods with prefix "_"
 * TODO: Clean up and remove jquery dependency as much as possible
 *           - Remove the need of "find" to speed up things a bit
 * TODO: Clean up code copied from other extension (meramedia.Context.SetDefaultLocation)
 */
-var LoadedApi = false;
+var LoadedApi = function () {return typeof google != 'undefined' && typeof google.maps != 'undefined';};
 var meramedia = (typeof meramedia == 'undefined' || meramedia == null) ? {} : meramedia;
 
 // Debug settings
@@ -48,7 +47,12 @@ meramedia.Context.SetDefaultLocation = (meramedia.Context.SetDefaultLocation == 
     Settings for the display of a map.
     Also contains default settings of the map.
 */
+
 function MapSettings() {
+	/// <summary>
+	/// Settings for a map
+	/// </summary>
+
     // Mixed settings,
     // information about the map
     this.Markers = null;
@@ -81,6 +85,9 @@ function MapSettings() {
 }
 
 function LocationMarker() {
+	/// <summary>
+	/// Location marker.
+	/// </summary>
     this.Name = null; // The name of the marker (custom name entered by the user)
     this.Title = null; // Title of the marker (geographical position)
     this.Position = null; // Position of the marker
@@ -91,7 +98,7 @@ function LocationMarker() {
 
 // Load map api from Google
 function LoadMapsApi(cb) {
-    if (!LoadedApi) {
+    if (!LoadedApi()) {
         $.ajax({
             type: "get",
             dataType: "script",
@@ -111,12 +118,15 @@ function LoadMapsApi(cb) {
     }
 }
 
-// Creates a Google map with the given identifiers
-// _id = id of the map object
-// _settings = The map settings object (see class:MapSettings)
-// listeners = state listeners (see class:MapStateListener)
-// _markerAddOnInitialize Markers as an array [marker, marker] etc.
-function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners, /*Array*/ _markerAddOnInitialize) {
+function GoogleMap( _id, _settings, listeners, _markerAddOnInitialize) {
+	/// <summary>
+    /// Creates a Google map with the given identifiers
+	/// </summary>
+    /// <param name="_id" type="String">id of the map object</param>
+    /// <param name="_settings" type="MapSettings">The map settings object</param>
+    /// <param name="listeners" type="MapStateListener">state listeners</param>
+    /// <param name="_markerAddOnInitialize" type="LocationMarker[]">Markers as an array</param>
+
     var self = this; // View hack
 
     this.settings = _settings;
@@ -144,11 +154,27 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
     this._updatedBounds = false;
     this._initialized = false; // true = initialized the map, false = not initialized yet (need to call .Initialize())
     this.IsInitialized = function () {
+    	/// <summary>
+    	/// Returns true if the map is initialized, false otherwise
+    	/// </summary>
+    	/// <returns type="">True if initialized, false otherwise</returns>
         return this._initialized;
     }
 
-    // Zooms the map to fit around the markers that are on the map
+    this.ForceSave = function () {
+    	/// <summary>
+        /// Force all listeners to save any data that needs to be saved
+        /// Usage: Before re-rendering etc. (To force any data that needs to be rendered later on to be saved before reading it)
+    	/// </summary>
+        for (var i = 0; i < self.listeners.length; i++) {
+            self.listeners[i].ForceSaveSettingsEvent(this);
+        }
+    };
+
     this._ZoomToFit = function () {
+    	/// <summary>
+        /// Zooms the map to fit around the markers that are on the map
+    	/// </summary>
         var latlngbounds = new google.maps.LatLngBounds();
 
         // Fit for regular markers
@@ -165,12 +191,15 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         this._updatedBounds = true;
         this.map.fitBounds(latlngbounds);
     };
+
     this.ZoomToFit = this._ZoomToFit;
 
-    // Remove a marker from the map
-    // [marker] = Google marker
-    // [isSearchMarker] = true/false depending if the marker is a search marker or regular marker
     this.RemoveMarker = function (marker, isSearchMarker) {
+    	/// <summary>
+        /// Remove a marker from the map
+    	/// </summary>
+    	/// <param name="marker" type="google.maps.Marker>The marker to remove</param>
+    	/// <param name="isSearchMarker" type="Boolean">True for search marker, false otherwise</param>
         meramedia.log("[GoogleMaps] Removing marker " + marker.id + " from map");
         if (typeof isSearchMarker == 'undefined' || isSearchMarker == null || !isSearchMarker) {
             delete this.markers[marker.id];
@@ -188,10 +217,21 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         marker.setMap(null);
     };
 
-    // Creates a search marker with a given position, title and map
-    // [position] = latlng
-    // [title] = string, optional
+
+    this.RemoveAllMarkers = function () {
+        for(var key in self.markers) {
+            if (key != null && key != undefined) {
+                self.RemoveMarker(self.markers[key], false);
+            }
+        }
+    }
+
     this.CreateSearchMarker = function (position, title) {
+    	/// <summary>
+        /// Creates a search marker with a given position, title and map
+    	/// </summary>
+    	/// <param name="position" type="google.maps.LatLng></param>
+    	/// <param name="title" type="Title">The title of the marker, may be null</param>
         var searchMarker = this.CreateMarker(
             position,
             null,
@@ -221,8 +261,10 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         });
     };
 
-    // Remove all search markers from the map
     this._ClearSearchMarkers = function () {
+    	/// <summary>
+        /// Remove all search markers from the map
+    	/// </summary>
         for (var i = 0; i < this.searchMarkers.length; i++) {
             if (this.searchMarkers != null)
                 this.searchMarkers[i].setMap(null);
@@ -231,8 +273,16 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         this.searchMarkers = new Array();
     };
 
-    // Create a new marker on the map
     this.CreateMarker = function (position, name, title, _markerOptions, addToMap) {
+    	/// <summary>
+        /// Create a new marker on the map
+    	/// </summary>
+    	/// <param name="position" type="google.maps.LatLng></param>
+    	/// <param name="name" type="String"></param>
+    	/// <param name="title" type="String">The title of the map, may be set to null</param>
+    	/// <param name="_markerOptions" type="google.maps.MarkerOptions">Dictionary containing the options for the map</param>
+    	/// <param name="addToMap" type="Boolean">True to add the marker to the map, false otherwise</param>
+    	/// <returns type="google.maps.Marker">The created marker</returns>
         meramedia.log("[GoogleMaps] Creating marker " + name);
 
         var markerOptions = null;
@@ -289,14 +339,21 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         return tempMarker;
     }
 
-    // Rerender the map 
-    this.Rerender = function (_mapOptions) {
+    this.Rerender = function (_mapOptions, markers) {
+    	/// <summary>
+    	/// Rerender the map
+    	/// </summary>
+    	/// <param name="_mapOptions" type="google.maps.MapOptions">Map options</param>
+    	/// <param name="markers" type="LocationMarker[]">The markers to add to the map</param>
         meramedia.log("[GoogleMap] Re-rendering the map...");
-        this.Initialize(true, _mapOptions);
+        this.Initialize(true, _mapOptions, markers);
     };
 
-    // Register marker events
     this._RegisterMarkerEvents = function (marker) {
+    	/// <summary>
+    	/// Register click/drag events on the given marker
+    	/// </summary>
+    	/// <param name="marker" type="google.maps.Marker">The marker to add click events on</param>
         google.maps.event.addListener(marker, 'rightclick', function () {
             self.RemoveMarker(marker);
         });
@@ -308,9 +365,10 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         });
     };
     this.RegisterMarkerEvents = this._RegisterMarkerEvents;
-
-    // Register base events that we will always need, even if the map is not user customizable
     this.RegisterBaseEvents = function () {
+    	/// <summary>
+        /// Register base events that we will always need, even if the map is not user customizable
+    	/// </summary>
         google.maps.event.addListenerOnce(self.map, 'bounds_changed', function (event) {
             if (self.numMarkers == 1 && self._updatedBounds) {
                 self._updatedBounds = false;
@@ -319,8 +377,11 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         });
     };
 
-    // Register events on the map
     this._RegisterEvents = function () {
+    	/// <summary>
+        /// Register events on the map
+    	/// </summary>
+
         // Bind our events
         google.maps.event.addListener(self.map, 'rightclick', function (e) {
             self.CreateMarker(e.latLng, null, null);
@@ -346,9 +407,12 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
     };
     this.RegisterEvents = this._RegisterEvents;
 
-    // Set the user customizable option. If not customizable we will not
-    // be able to move markers etc. Will not register any new events on markers
     this.SetUserCustomizable = function (setUserCustomizable) {
+    	/// <summary>
+        /// Set the user customizable option. If not customizable we will not
+        /// be able to move markers etc. Will not register any new events on markers
+    	/// </summary>
+    	/// <param name="setUserCustomizable">True to set user customizable (dragable markers + click events etc.), false otherwise</param>
         meramedia.warn("[GoogleMaps] Settings UserCustomizable to " + setUserCustomizable);
         if (setUserCustomizable) {
             this.RegisterEvents = this._RegisterEvents;
@@ -357,17 +421,31 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         else {
             meramedia.warn("[GoogleMaps] Unbinding RegisterEvents and RegisterMarkerEvents");
             this.RegisterEvents = function () { }
-            this.RegisterMarkerEvents = function () {
-            }
+            this.RegisterMarkerEvents = function () {}
         }
     };
 
-    // Initializes the Google map
-    this.Initialize = function (rerender, _mapOptions) {
+    this.Initialize = function (rerender, _mapOptions, markers) {
+    	/// <summary>
+        /// Initializes the Google map
+    	/// </summary>
+    	/// <param name="rerender" type="Boolean">True if the initialization is a re-render, false otherwise</param>
+    	/// <param name="_mapOptions" type="google.maps.MapOptions">The map options</param>
+    	/// <param name="markers" type="LocationMarker[]">The markers to add to the map efter initialization</param>
         meramedia.log("[GoogleMaps] Initializing map");
 
         if (rerender == null || rerender == undefined)
             rerender = false;
+
+        if (rerender) {
+            meramedia.log("[GoogleMap] Notifying listeners about RerenderBeginEvent");
+            for (var i = 0; i < self.listeners.length; i++) {
+                self.listeners[i].RerenderBeginEvent(self);
+            }
+
+            // Remove all old markers
+            self.RemoveAllMarkers();
+        }
 
         meramedia.log("[GoogleMaps] Rerender: " + rerender);
 
@@ -396,15 +474,19 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
 
         // If we are not re-rendering we must notify all listeners that our initialization process is done
         // This must be done before the adding of the markers!
-        if (!rerender) {
-            meramedia.log("[GoogleMaps] Notifying listeners about initalization DONE!");
+        //if (!rerender) {
+            meramedia.log("[GoogleMaps] Notifying listeners about initalization DONE! (Rerender: " + rerender + ")");
             for (var i = 0; i < self.listeners.length; i++) {
                 self.listeners[i].MapInitializedEvent(self);
             }
+        //}
+
+        if (rerender && markers != null && markers != undefined) {
+            this._markerAddOnInitialize = markers;
         }
 
         // Add markers
-        if (!rerender && this._markerAddOnInitialize != null && this._markerAddOnInitialize != undefined) {
+        if (this._markerAddOnInitialize != null && this._markerAddOnInitialize != undefined) {
             meramedia.log("[GoogleMaps] Adding markers to map from mapSettings");
 
             // Fetch markers from saved content
@@ -445,8 +527,11 @@ function GoogleMap( /* String */ _id, /*Object*/ _settings, /*Array*/ listeners,
         }
     }
 
-    // Returns an unique marker id..
     this._GetMarkerId = function () {
+    	/// <summary>
+        /// Returns an unique marker id
+    	/// </summary>
+    	/// <returns type="Integer">A unique marker id</returns>
         return meramedia.Context.CurrentMarkerId++;
     }
 };

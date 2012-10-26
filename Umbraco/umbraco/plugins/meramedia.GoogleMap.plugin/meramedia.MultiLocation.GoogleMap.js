@@ -9,6 +9,12 @@ function MapStateListener() {
 
     /* Event */
     this.MapInitializedEvent = function (mapObject) {
+    	/// <summary>
+    	/// Map initialization event
+    	/// </summary>
+    	/// <param name="mapObject" type="GoogleMap">The map object</param>
+        this._ClearMap(mapObject);
+
         // Set the graphical parts of the lsit
         mapObject.markerList = $(mapObject.container).find('[id^=markerList]');
 
@@ -55,17 +61,29 @@ function MapStateListener() {
 
     /* Event */
     this.StateChangeEvent = function (mapObject) {
-        // Update save state
-        //this._UpdateSaveValue(mapObject);
+    	/// <summary>
+    	/// State changed event
+    	/// </summary>
+        /// <param name="mapObject" type="GoogleMap">The map object</param>
     };
 
     /* Event */
     this.MarkerDragedEvent = function (mapObject, marker) {
+    	/// <summary>
+    	/// Marker draged event
+    	/// </summary>
+    	/// <param name="mapObject" type="GoogleMap">The map object</param>
+    	/// <param name="marker" type="google.maps.Marker">The draged marker</param>
         this.MarkerUpdatedEvent(mapObject, marker);
     };
 
     /* Event */
     this.MarkerAddedEvent = function (mapObject, marker) {
+    	/// <summary>
+    	/// Event called when a marker is added to the map
+    	/// </summary>
+    	/// <param name="mapObject" type="GoogleMap">The map</param>
+    	/// <param name="marker" type="google.maps.Marker">The marker that was added to the map</param>
         this._AddMarkerTolist(mapObject, marker);
     };
 
@@ -87,6 +105,15 @@ function MapStateListener() {
         //this._UpdateSaveValue(mapObject);
 
         // TODO: Update any other stuff needed
+    };
+
+    /* Event */
+    this.RerenderBeginEvent = function (mapObject) {
+        this._UpdateSaveValue(mapObject);
+    };
+
+    this.RerenderFinishedEvent = function (mapObject) {
+        
     };
 
     /* Event */
@@ -284,6 +311,10 @@ function MapStateListener() {
         //self._UpdateSaveValue(mapObject);
     };
 
+    this.ForceSaveSettingsEvent = function (mapObject) {
+        this._UpdateSaveValue(mapObject);
+    };
+
     /* Internal method */
     this._UpdateSaveValue = function (mapObject) {
         var temp = [];
@@ -313,6 +344,15 @@ function MapStateListener() {
         var val = JSON.stringify(mapSettings);
         $(mapObject.container).find('input[id*=hiddenLocations_]').attr('value', val);
     }
+
+    // Clear map before re-rendering
+    // [mapObject] = The map object to clear for
+    this._ClearMap = function (mapObject) {
+        // Clear mapobject markerlist
+        if (mapObject.markerList != undefined) {
+            mapObject.markerList.html('');
+        }
+    };
 }
 
 function StartApplication() {
@@ -325,8 +365,6 @@ function StartApplication() {
 
         // Contains "backoffice" settings
         var settings = $(this).find('input.mapSettings').val();
-
-        //console.log(JSON.parse(settings));
 
         // Contains our saved markers etc.
         var content = $(this).find('input.hiddenLocations').val();
@@ -377,20 +415,33 @@ function StartApplication() {
                     if (!mapObject.IsInitialized()) {
                         mapObject.Initialize();
                     } else {
-                        var mapSettings = $(mapObject.container).find('input[id*=hiddenLocations_]').attr('value');
+                        // Force rerender from listeners
+                        mapObject.ForceSave();
+
+                        var mapSettings = $(mapObject.container).find('input.hiddenLocations').attr('value');
 
                         if (mapSettings != undefined && mapSettings != null && mapSettings != '') {
                             mapSettings = JSON.parse(mapSettings);
                         }
                         else {
-                            mapSettings = null;
+                            mapSettings = new MapSettings();
+                        }
+
+                        // Fetch re-render markers
+                        var content = $(mapObject.container).find('input.hiddenLocations').val();
+                        if (content != null && content != '') {
+                            content = JSON.parse(content);
+                        }
+
+                        if (content.Markers != undefined) {
+                            meramedia.log("[GoogleMap] Rerendering with " + content.Markers.length + " markers");
                         }
 
                         mapObject.Rerender({
                             zoom: mapSettings.MapOptions.zoom,
                             center: new google.maps.LatLng(mapSettings.MapOptions.center.split(',')[0], mapSettings.MapOptions.center.split(',')[1]),
                             mapTypeId: mapSettings.MapOptions.mapTypeId
-                        });
+                        }, (content.Markers != undefined ? content.Markers : null));
                     }
                 });
             });
