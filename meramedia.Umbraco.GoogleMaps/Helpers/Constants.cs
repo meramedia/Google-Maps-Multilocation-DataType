@@ -17,13 +17,13 @@
         //public const string DefaultSearchIcon = "/umbraco/plugins/meramedia.GoogleMap.plugin/searchIcon.png";
 
         // CSS
-        public const string GoogleMapCss = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.css";
+        public const string GoogleMapCss = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.min.css";
 
         // Javascript
-        public const string GoogleMapJavascript = PluginResourceDir + "meramedia.GoogleMap.js";
-		public const string MultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.js";
-        public const string RenderMultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.Render.js";
-        public const string FrontOfficeMapStateListenerJavascript = PluginResourceDir + "meramedia.MultiLocation.Frontoffice.Listener.js";
+        public const string GoogleMapJavascript = PluginResourceDir + "meramedia.GoogleMap.min.js";
+        public const string MultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.GoogleMap.min.js";
+        public const string RenderMultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.Render.min.js";
+        public const string FrontOfficeMapStateListenerJavascript = PluginResourceDir + "meramedia.MultiLocation.Frontoffice.Listener.min.js";
 
 		/* Helpers */
 		internal const char Comma = ',';
