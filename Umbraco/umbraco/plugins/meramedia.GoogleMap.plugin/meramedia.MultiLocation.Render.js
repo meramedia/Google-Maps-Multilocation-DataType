@@ -4,11 +4,11 @@
 function RenderFrontendMap() {
     var renderSettings = meramedia.GoogleMaps.RenderSettings; // Is there any better method of passing this to our script?
 
-    meramedia.log("[GoogleMaps] Starting rendering process with settings:");
-    meramedia.log(renderSettings);
+    //meramedia.log("[GoogleMaps] Starting rendering process with settings:");
+    //meramedia.log(renderSettings);
 
     if (renderSettings == null || renderSettings == undefined) {
-        meramedia.log("[GoogleMaps] Invalid render settings, aborting");
+        //meramedia.log("[GoogleMaps] Invalid render settings, aborting");
         return;
     }
 
@@ -22,7 +22,7 @@ function RenderFrontendMap() {
     var markers = [];
     if (mapSettings != null) {
         $.each(mapSettings.Markers, function (i) {
-            meramedia.log("[GoogleMaps] Adding marker to map " + this.Name + "(" + this.Position + ")");
+            //meramedia.log("[GoogleMaps] Adding marker to map " + this.Name + "(" + this.Position + ")");
             if (!mapSettings.CoreSettings.AllowCustomLinks) {
                 this.Link = null;
             }
@@ -30,7 +30,7 @@ function RenderFrontendMap() {
         });
     }
     else {
-        meramedia.log("[GoogleMaps] No map settings in rendering, creating new...");
+        //meramedia.log("[GoogleMaps] No map settings in rendering, creating new...");
         mapSettings = new MapSettings();
     }
 
@@ -46,7 +46,7 @@ function RenderFrontendMap() {
     );
 
     // Set our display container
-    meramedia.log("[GoogleMaps] Settings container on map object to " + renderSettings.MapContainer);
+    //meramedia.log("[GoogleMaps] Settings container on map object to " + renderSettings.MapContainer);
     map.container = document.getElementById(renderSettings.MapContainer);
     map.Initialize();
 

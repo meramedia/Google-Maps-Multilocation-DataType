@@ -165,7 +165,7 @@ function MapStateListener() {
 
         var val = $(mapObject.container).find('.markerValueList').val();
         if (val != '' && val != undefined) {
-            markerList = JSON.parse(val);
+            markerList = $.parseJSON(val);
         }
 
         // Create our list element
@@ -341,7 +341,7 @@ function MapStateListener() {
 
         mapSettings.Markers = temp;
 
-        var val = JSON.stringify(mapSettings);
+        var val = $.getJSON(mapSettings);
         $(mapObject.container).find('input[id*=hiddenLocations_]').attr('value', val);
     }
 
@@ -371,14 +371,14 @@ function StartApplication() {
 
         //console.log(content);
         if (content != null && content != '') {
-            content = JSON.parse(content);
+            content = $.parseJSON(content);
         }
         else {
             content = new MapSettings();
         }
 
         // Set our backoffice settings
-        content.BackOfficeSettings = JSON.parse(settings);
+        content.BackOfficeSettings = $.parseJSON(settings);
 
         // Create the map
         meramedia.Context.maps[id] = new GoogleMap(
@@ -421,7 +421,7 @@ function StartApplication() {
                         var mapSettings = $(mapObject.container).find('input.hiddenLocations').attr('value');
 
                         if (mapSettings != undefined && mapSettings != null && mapSettings != '') {
-                            mapSettings = JSON.parse(mapSettings);
+                            mapSettings = $.parseJSON(mapSettings);
                         }
                         else {
                             mapSettings = new MapSettings();
@@ -430,12 +430,12 @@ function StartApplication() {
                         // Fetch re-render markers
                         var content = $(mapObject.container).find('input.hiddenLocations').val();
                         if (content != null && content != '') {
-                            content = JSON.parse(content);
+                            content = $.parseJSON(content);
                         }
 
-                        if (content.Markers != undefined) {
-                            meramedia.log("[GoogleMap] Rerendering with " + content.Markers.length + " markers");
-                        }
+                        //if (content.Markers != undefined) {
+                        //    meramedia.log("[GoogleMap] Rerendering with " + content.Markers.length + " markers");
+                        //}
 
                         mapObject.Rerender({
                             zoom: mapSettings.MapOptions.zoom,
