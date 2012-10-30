@@ -20,7 +20,7 @@ meramedia.Context.SetDefaultLocation = (meramedia.Context.SetDefaultLocation == 
     /* Cloned code from http://our.umbraco.org/projects/backoffice-extensions/google-maps-datatype */
     var DefaultLocation = $('#' + container.id).find('input.mapSettings').val();
     if ( DefaultLocation != null && DefaultLocation != undefined ) {
-        DefaultLocation = $.parseJSON(DefaultLocation).defaultLocation;
+        DefaultLocation = JSON.parse(DefaultLocation).defaultLocation;
     }
 
     if (typeof currentCenter != 'undefined' && currentCenter != null && currentCenter.lat() != 0 && currentCenter.lng() != 0) {
@@ -512,7 +512,7 @@ function GoogleMap( _id, _settings, listeners, _markerAddOnInitialize) {
 
                 // Marker link
                 //marker.link = ;
-                marker.party = "Hello world";
+                //marker.party = "Hello world";
 
                 // Should we move this to some other place and create two separate functions.
                 // However we should try and separate all backoffice and front settings...

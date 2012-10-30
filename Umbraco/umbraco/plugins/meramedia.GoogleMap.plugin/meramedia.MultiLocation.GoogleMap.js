@@ -165,7 +165,7 @@ function MapStateListener() {
 
         var val = $(mapObject.container).find('.markerValueList').val();
         if (val != '' && val != undefined) {
-            markerList = $.parseJSON(val);
+            markerList = JSON.parse(val);
         }
 
         // Create our list element
@@ -341,7 +341,7 @@ function MapStateListener() {
 
         mapSettings.Markers = temp;
 
-        var val = $.getJSON(mapSettings);
+        var val = JSON.stringify(mapSettings);
         $(mapObject.container).find('input[id*=hiddenLocations_]').attr('value', val);
     }
 
@@ -371,14 +371,14 @@ function StartApplication() {
 
         //console.log(content);
         if (content != null && content != '') {
-            content = $.parseJSON(content);
+            content = JSON.parse(content);
         }
         else {
             content = new MapSettings();
         }
 
         // Set our backoffice settings
-        content.BackOfficeSettings = $.parseJSON(settings);
+        content.BackOfficeSettings = JSON.parse(settings);
 
         // Create the map
         meramedia.Context.maps[id] = new GoogleMap(
@@ -421,7 +421,7 @@ function StartApplication() {
                         var mapSettings = $(mapObject.container).find('input.hiddenLocations').attr('value');
 
                         if (mapSettings != undefined && mapSettings != null && mapSettings != '') {
-                            mapSettings = $.parseJSON(mapSettings);
+                            mapSettings = JSON.parse(mapSettings);
                         }
                         else {
                             mapSettings = new MapSettings();
@@ -430,7 +430,7 @@ function StartApplication() {
                         // Fetch re-render markers
                         var content = $(mapObject.container).find('input.hiddenLocations').val();
                         if (content != null && content != '') {
-                            content = $.parseJSON(content);
+                            content = JSON.parse(content);
                         }
 
                         //if (content.Markers != undefined) {
