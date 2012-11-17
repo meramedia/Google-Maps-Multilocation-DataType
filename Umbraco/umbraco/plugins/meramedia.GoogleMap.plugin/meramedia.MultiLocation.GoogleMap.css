@@ -1,19 +1,100 @@
 ﻿/* Map container */
-.gmapContainer { line-height: normal; clear: both; }
-    .gmapContainer input.place { width: 75%; margin: 0 5px 3px 0; padding: 2px; }
-    .gmapContainer input.value{clear: left;width: 375px;margin: 0 5px 0 0;background-color: #eeeeee;}
+.gmapContainer { line-height: normal; clear: both; position:relative;}
+    .gmapContainer input.place { width: 395px; margin: 0 2px 3px 0; padding: 3px;  border:1px solid #ccc;}
+    .gmapContainer input.value{clear: left;width: 375px;margin: 0 5px 0 0;background-color: #708D91;}
     .gmapContainer .button {width: 75px;}
-    .gmapContainer .informationButton {width: 16px;height: 16px;float: left;margin-bottom: 4px;margin-right: 20px;}
-    .gmapContainer .map{clear: both;height: 375px;width: 461px;}
-    .gmapContainer .mapWidth, .gmapContainer .mapHeight {margin-left: 5px; }
+        .gmapContainer .button.search { border: none; padding: 4px; background:#708D91; cursor: pointer; color: #fff; border-left: none; }
+        .gmapContainer .button.search:hover { background-color: #4796a8; }
+    .gmapContainer .informationButton {width: 16px;height: 16px;float: left;margin-bottom: 4px;margin-right: 20px; cursor: pointer;}
+    .gmapContainer .map { clear: both;height: 375px;width: 461px;}
+    .gmapContainer .mapWidth, .gmapContainer .mapHeight { margin-left: 5px; width: 30px; }
+
+    /* Links */
+    .gmapContainer a { color: #708D91; }
+    .gmapContainer a:hover { color: #4796a8; }
+
+    /* General settings */
+    .gmapContainer .generalSettings .label, ul.markerList .label {margin-right: 10px; float:left; width: 200px; margin-bottom: 10px;}
+        .gmapContainer .generalSettings .input, ul.markerList .input { clear:both; }
+        .gmapContainer .generalSettings div, ul.markerList div {display: inline-block;}
+
+    /* Help area*/
+    .gmapContainer .helpArea { background: #ededf5; color: #708D91; margin-bottom: 2px; width: 495px; padding: 3px; clear:both; display:inline-block; margin-top: 2px;}
+    .gmapContainer .helpArea.hidden {background: transparent; line-height:20px;padding: 0;}
+        .gmapContainer .helpArea .helpButton {cursor: pointer; float:left; width: 30px;text-align: center;line-height: 35px; background: #708D91; margin-right: 10px; color: #fff; vertical-align:middle;}
+        .gmapContainer .helpArea.hidden .helpButton {line-height: 20px; padding: 0 3px 0 3px;background:#708D91; width: 10px;color:#fff;text-align:center;}
+        .gmapContainer .helpArea .helpText {display:inline-block; width: 60%;}
+        .gmapContainer .helpArea.hidden .helpText {display:none;}
+
+    .gmapContainer .area { clear: both; width: 480px; padding: 10px; background: #F7F8FA; border: 1px solid #E8EBF2; margin-top: 5px; }
+    .gmapContainer h3 {padding: 0; padding-bottom: 6px; border-bottom: 1px solid #cecece; }
+
+    /* Wrapper for map (to correcly render popup) */
+    .mapWrapper {position:relative; padding: 4px; background: #708D91;}
     
 .validatorError { float: left; color: Red; clear: both; }
 
 /* List of markers */
 ul.markerList {list-style: none;padding: 0;}
-    ul.markerList li { position: relative; margin-bottom: 4px; width: 100%; padding: 10px; background: #f4f4f4; border: 1px solid #ccc;}
-        ul.markerList li div.name p { font-size: 11px; color: #777; padding: 0; margin: 0; }
-        ul.markerList li > div { margin-bottom: 20px;}
-        ul.markerList li div.label {float:left; width: 200px;}
-        ul.markerList li div {display: table;}
-ul.markerList li .removeMarker { width: 16px; height: 16px; margin-left: 20px; right: 10px; top: 10px; position: absolute; background: transparent url('delete.png') no-repeat 0 0; }
+    ul.markerList li { position: relative; margin-bottom: 4px; width: 480px; padding: 10px; background: #f7f8fa; border: 1px solid #e8ebf2;}
+    ul.markerList .fakeLink { cursor: pointer; padding: 4px 10px; color: #fff; background-color: #708D91; font-weight: bold; text-decoration: none; }
+    ul.markerList .fakeLink:hover { background-color: #4796a8; }
+        ul.markerList .name { min-height: 25px; font-size: 19px; color: #777; padding: 0; margin: 0; width: 330px; display:block;overflow:hidden;}
+            ul.markerList .name.none
+            {
+                padding: 6px;
+                background: transparent url('grid.png') 0 0 repeat;
+            }
+        ul.markerList .settings { top: 10px; position: relative; }
+        ul.markerList .position { margin-left: 5px; }
+            ul.markerList .position a { color: #708D91; }
+        ul.markerList .remove { padding: 1px 7px; color: #fff; position:absolute; right: 10px; top:10px;}
+
+    ul.markerList .settingsDialog { display: none; width: 400px; padding-top: 10px; margin-top: 10px; border-top: 1px solid #e1e1e1;}
+
+/* Marker popup menu */
+.markerPopup {
+    width: 120px;
+    height: auto;
+    position: absolute;
+}
+
+    .markerPopup .markerArrow {
+        width: 37px;
+        height: 10px;
+        background: transparent url('arrow_bottom.png') -4px 0 no-repeat;
+    }
+
+    .markerPopup .markerArrow.active {
+        background: transparent url('arrow_bottom-filled.png') -4px 0 no-repeat;
+    }
+
+    .markerPopup ul {
+        margin: 0;
+        padding: 0;
+        border: 0*;
+        list-style: none;
+        background-color: #fff;
+    }
+
+    .markerPopup ul li {
+        cursor: pointer;
+        color: #708d91;
+        padding: 4px 10px;
+    }
+
+    .markerPopup ul li:hover {
+        background-color: #708d91;
+        color: #fff;
+    }
+
+    .markerPopup ul li:last-child {
+        border: none;
+    }
+
+/* Special */
+.fl { float:left; }
+.fr { float:right; }
+.p10top {padding-top: 10px;}
+.m10top { margin-top: 10px; }
+.m10right { margin-right:10px; }

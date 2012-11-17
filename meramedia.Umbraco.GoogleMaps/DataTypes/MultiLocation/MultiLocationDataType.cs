@@ -4,6 +4,7 @@ using umbraco.cms.businesslogic.datatype;
 using umbraco.editorControls.SettingControls;
 using umbraco.cms.businesslogic;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 {
@@ -23,7 +24,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 		public MultiLocationDataType()
 		{
 			// set the render control as the placeholder
-			this.RenderControl = this.m_Control;
+            this.RenderControl = this.m_Control;
 
 			// assign the initialise event for the control
 			this.m_Control.Init += new EventHandler(this.m_Control_Init);
@@ -96,6 +97,9 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
         [DataEditorSetting( "Minimum number of markers", description="Minimum number of markers a user may select. A value of -1 will disable this validation", defaultValue = Constants.DefaultMinNumberOfMarkers, type = typeof( TextField ) )]
         public string MinNumberOfMarkers { get; set; }
 
+        [DataEditorSetting( "Allow custom links", description="Allow linking markers to links leading to either external sites or content", defaultValue = true, type = typeof( umbraco.editorControls.SettingControls.CheckBox ) )]
+        public string AllowCustomLinks { get; set; }
+
 		/// <summary>
 		/// Handles the Init event of the m_Control control.
 		/// </summary>
@@ -116,6 +120,8 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             int MaxMarkers = -1;
             Int32.TryParse( MaxNumberOfMarkers, out MaxMarkers );
             this.m_Control.MaxMarkers = MaxMarkers;
+
+            this.m_Control.AllowCustomLinks = Boolean.Parse(AllowCustomLinks);
 
             this.m_Control.MarkersFolder = (String.IsNullOrEmpty(CustomMarkers) ? -2 : Int32.Parse( CustomMarkers ));
 		}

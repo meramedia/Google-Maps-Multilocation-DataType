@@ -26,7 +26,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         public string Title;
 
         ///// <summary>
-        ///// Currently NOT in use
+        ///// For future usage, HTML formated?
         ///// </summary>
         //public string Content;
 
@@ -61,5 +61,11 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
                 return (!String.IsNullOrEmpty( Position ) && Position.IndexOf(',') != -1) ? Position.Split( ',' ).Last().Trim() : String.Empty;
             }
         }
+
+        /// <summary>
+        /// Link to redirect the user to when clicking the marker.
+        /// Set to null to disable linking 
+        /// </summary>
+        public string Link { get; set;}
     }
 }

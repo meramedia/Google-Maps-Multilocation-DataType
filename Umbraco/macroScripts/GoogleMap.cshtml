@@ -1,35 +1,51 @@
-@*
-    This file contains the necessary implementation to render a Google Map from the included
-    Google Map library.
-
-    The map is generated with the GoogleMap class in the included file (see meramedia.Umbraco.GoogleMaps.Helpers.Constants.GoogleMapJavascript)
-    The rendering is performed withing the Render class (see meramedia.Umbraco.GoogleMaps.Helpers.Constants.RenderMultiLocationJavaScript)
-
-    Javascripts are included if necessary meaning that if libraries are already loaded the loading will not be performed.
-*@
-@inherits umbraco.MacroEngines.DynamicNodeContext
+﻿@inherits umbraco.MacroEngines.DynamicNodeContext
 @using meramedia.Umbraco.GoogleMaps.Objects
-@using Newtonsoft.Json;
-@{
-    if( Parameter[ "MapPropertyName" ] == null )
-    {
+@*@{
+    //if( Parameter["MapPropertyName"] == null || Parameter["MapPropertyName"] == "") {
+    //    return;
+    //}
+    
+    // Parse google map
+    GoogleMap map = GoogleMap.Parse(Model.GetPropertyValue(Parameter["MapPropertyName"].ToString()));
+        
+    if(map == null) {
+        <!-- Something went wrong with the parsing of the provided map data, exiting -->
         return;
     }
-    
-    var json = Model.GetPropertyValue( Parameter[ "MapPropertyName" ].ToString() );
-    GoogleMap map = GoogleMap.Parse( json );
+
+    // Width/Height
+    Int32 height = map.Height, width = map.Width;
+    if( Parameter[ "Height" ] != "" )
+    {
+        height = Int32.Parse( Parameter[ "Height" ] );
+    }
+
+    if( Parameter[ "Width" ] != "" )
+    {
+        width = Int32.Parse( Parameter[ "Width" ] );
+    }
+}*@
+@{
+    var map = Model.GetPropertyValue( Parameter[ "MapPropertyName" ].ToString() );
 }
-<script>!window.jQuery && document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"><\/script>')</script>
-<script>
-    @* This is a bit on the ugly side, future version should include a cleanup *@
-    var meramedia = { GoogleMaps: {}, RenderSettings: { Container: "gmapContainer_@(Model.Id)", MapContainer : "map_@(Model.Id)", "Object": @Html.Raw( map.ToString() ) } };
-    $(function () {
-        LoadMapsApi('meramedia.GoogleMaps.Render');
-    });
-</script>
-<script>!window.jQuery && document.write('<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"><\/script>')</script>
-<script>!window.GoogleMap && document.write('<script src="@(meramedia.Umbraco.GoogleMaps.Helpers.Constants.GoogleMapJavascript)"><\/script>');</script>
-<script>!window.meramedia.GoogleMaps.Render && document.write('<script src="@(meramedia.Umbraco.GoogleMaps.Helpers.Constants.RenderMultiLocationJavaScript)"><\/script>')</script>
-<div id="gmapContainer_@(Model.Id)" class="gmapContainer">
-    <div class="map" id="map_@(Model.Id)" style="width: @(map.Width); height:@(map.Height);"></div>
-</div>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+<head>    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+</head>
+<body>
+    <script src="/umbraco/plugins/meramedia.GoogleMap.plugin/googlemaps.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
+    <script>
+        function initialize() {
+            var mapSettings = $.parseJSON('@(Html.Raw(map))');
+            var settings = new Meramedia.GoogleMaps.RenderSettings("map_0", mapSettings);
+            var map = new Meramedia.GoogleMaps.GoogleMap(settings);
+            map.Initialize();
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+    <div id="gmapContainer_0" class="overviewMap" style="height: 500px; width: 500px;">
+        <div class="gMap" id="map_0" style="width:500px;height:500px;"></div>
+    </div>
+</body>
+</html>
