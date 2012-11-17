@@ -1,6 +1,6 @@
 ﻿module Meramedia.GoogleMaps {
     //#region Debug/Log
-    var DebugSession: bool = true;
+    var DebugSession: bool = false;
     // Declare console.log
     var internalConsole = (typeof console === 'undefined' || console == null) ? 
     {
@@ -123,3 +123,13 @@
     }
     //#endregion
 }
+
+interface Array {
+    remove(from: number, to?: number);
+}
+
+Array.prototype.remove = function (from:number, to?: number) {
+    var rest = this.slice((to || from) + 1 || this.length);
+    this.length = from < 0 ? this.length + from : from;
+    return this.push.apply(this, rest);
+};

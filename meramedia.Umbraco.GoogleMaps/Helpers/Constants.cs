@@ -25,7 +25,7 @@
         // Javascript
         public static string[] JavaScriptLibraries = new string[]{
                                                         PluginResourceDir + "libs/json.min.js",
-                                                        "https://maps.googleapis.com/maps/api/js?sensor=false",
+                                                        "https://maps.google.com/maps/api/js?sensor=false&libraries=places&v=3.9",
                                                         PluginResourceDir + "meramedia.googlemaps.Core.js",
                                                         PluginResourceDir + "meramedia.googlemaps.GoogleMap.js",
                                                         //PluginResourceDir + "meramedia.googlemaps.Renderer.js"

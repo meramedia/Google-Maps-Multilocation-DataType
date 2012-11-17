@@ -24,23 +24,27 @@ module Meramedia.GoogleMaps {
         }
     }
 
+    export class FakeState {
+        static Markers: google.maps.Marker[] = [];
+    }
+
     // Maps marker. Transformable into a google maps marker
     export class Marker implements IMapsMarker {
         private static NextId: number = 0;
 
         // Internal
         Id: number;
-        Name: string;
-        Title: string;
+        Name: string = null;
+        Title: string = null;
         Visible: bool = true;
         Draggable: bool = false;
         Clickable: bool = false;
         ZIndex: number = DefaultValues.Marker.ZIndex;
         Link: string = null;
         Icon: string = null;
-        Position: string;
+        Position: string = "0,0";
 
-        Content: string;
+        Content: string = null;
 
         /// <summary>
         /// Must be set before applying ToGoogleMapsMarker
@@ -70,12 +74,20 @@ module Meramedia.GoogleMaps {
             marker.Link = H.IfDefined(markerOptions.Link, marker.Link);
             marker.Icon = H.IfDefined(markerOptions.Icon, marker.Icon);
             marker.Position = H.IfDefined(markerOptions.Position, "0,0");
+            marker.Content = H.IfDefined(markerOptions.Content, null);
 
             return marker;
         }
 
         GetDisplayTitle(): string {
-            return H.IfDefined(this.Name, this.Name + "\n" + this.Title, this.Title);
+            if (H.IsDefined(this.Name)) {
+                return this.Name + (H.IsDefined(this.Title) ? this.Title : String.Empty);
+            }
+            return this.Title;
+        }
+
+        LatLngPosition(): google.maps.LatLng {
+            return H.IfDefined(this.Position, new google.maps.LatLng(0,0), new google.maps.LatLng(parseFloat(this.Position.split(',')[0]), parseFloat(this.Position.split(',')[1])))
         }
 
         private GetMarkerOptions() : google.maps.MarkerOptions {
@@ -90,44 +102,103 @@ module Meramedia.GoogleMaps {
             };
         }
 
-        private UpdateValues(marker: google.maps.Marker): void {
-            this.Visible = marker.getVisible();
-            this.Draggable = marker.getDraggable();
-            this.Clickable = marker.getClickable();
-            this.ZIndex = marker.getZIndex();
-            this.Icon = (marker.getIcon() == null ? null : marker.getIcon().url);
-            this.Position = marker.getPosition().toString().replace('(','').replace(')','');
+        public Update(toGoogleMapsMarker: bool = false): void {
+            var marker = this.MapsMarker();
+            if (!toGoogleMapsMarker) {
+                this.Visible = marker.getVisible();
+                this.Draggable = marker.getDraggable();
+                this.Clickable = marker.getClickable();
+                this.ZIndex = marker.getZIndex();
+                this.Icon = (marker.getIcon() == null ? null : marker.getIcon().url);
+                this.Position = marker.getPosition().toString().replace('(', '').replace(')', '');
+            } else {
+                marker.setVisible(this.Visible);
+                marker.setClickable(this.Clickable);
+                marker.setZIndex(this.ZIndex);
+                marker.setIcon(this.Icon);
+                marker.setTitle(this.GetDisplayTitle());
+                marker.setPosition(this.LatLngPosition());
+            }
         }
 
-        //private MapsMarker: google.maps.Marker;
-        ToGoogleMapsMarker(): google.maps.Marker {
-            var ghost = this;
-            var MapsMarker = new google.maps.Marker(this.GetMarkerOptions());
-            google.maps.event.addListener(MapsMarker, 'click', function (e) { 
-                ghost.UpdateValues(MapsMarker);
-                if (ghost.ClickEvent) {
-                    ghost.ClickEvent(ghost, MapsMarker, e);
-                }
-            });
-            google.maps.event.addListener(MapsMarker, 'rightclick', function (e) { 
-                ghost.UpdateValues(MapsMarker);
-                if (ghost.RightClickEvent) {
-                    ghost.RightClickEvent(ghost, MapsMarker, e);
-                }
-            });
-            google.maps.event.addListener(MapsMarker, 'dragstart', function (e) { 
-                ghost.UpdateValues(MapsMarker);
-                if (ghost.DragStartEvent) {
-                    ghost.DragStartEvent(ghost, MapsMarker, e);
-                }
-            });
-            google.maps.event.addListener(MapsMarker, 'dragend', function (e) { 
-                ghost.UpdateValues(MapsMarker);
-                if (ghost.DragEndEvent) { 
-                    ghost.DragEndEvent(ghost, MapsMarker, e); 
-                } 
-            });
-            return MapsMarker;
+        public SetIcon(icon: string): void {
+            this.Icon = icon;
+            this.Update(true);
+        }
+
+        public SetTitle(title: string): void {
+            this.Title = title;
+            this.Update(true);
+        }
+
+        public SetVisible(visible: bool): void {
+            this.Visible = visible;
+            this.Update(true);
+        }
+
+        public SetDraggable(draggable: bool): void {
+            this.Draggable = draggable;
+            this.Update(true);
+        }
+
+        public SetLink(link: string): void {
+            this.Link = link;
+            this.Update(true);
+        }
+
+        public SetPosition(position: string): void {
+            this.Position = position;
+            this.Update(true);
+        }
+
+        public SetClickable(clickable: bool): void {
+            this.Clickable = clickable;
+            this.Update(true);
+        }
+
+        public SetMapsPosition(position: any, position2: any): void;
+        public SetMapsPosition(position: google.maps.LatLng): void;
+        public SetMapsPosition(position: any, position2?: any): void {
+            if (H.IsDefined(position2)) {
+                this.Position = position + "," + position2;
+            } else {
+                this.Position = position.toString().replace('(', '').replace(')', '');
+            }
+            this.Update(true);
+        }
+
+        MapsMarker(): google.maps.Marker {
+            if (!H.IsDefined(FakeState.Markers[this.Id])) {
+                var ghost = this;
+                var MapsMarker = new google.maps.Marker(this.GetMarkerOptions());
+                google.maps.event.addListener(MapsMarker, 'click', function (e) {
+                    ghost.Update();
+                    if (ghost.ClickEvent) {
+                        ghost.ClickEvent(ghost, MapsMarker, e);
+                    }
+                });
+                google.maps.event.addListener(MapsMarker, 'rightclick', function (e) {
+                    ghost.Update();
+                    if (ghost.RightClickEvent) {
+                        ghost.RightClickEvent(ghost, MapsMarker, e);
+                    }
+                });
+                google.maps.event.addListener(MapsMarker, 'dragstart', function (e) {
+                    ghost.Update();
+                    if (ghost.DragStartEvent) {
+                        ghost.DragStartEvent(ghost, MapsMarker, e);
+                    }
+                });
+                google.maps.event.addListener(MapsMarker, 'dragend', function (e) {
+                    ghost.Update();
+                    if (ghost.DragEndEvent) {
+                        ghost.DragEndEvent(ghost, MapsMarker, e);
+                    }
+                });
+
+                FakeState.Markers[this.Id] = MapsMarker;
+            }
+            return FakeState.Markers[this.Id];
         }
     }
 
@@ -264,10 +335,11 @@ module Meramedia.GoogleMaps {
         
         Initialized: bool = false;
         UpdatedBounds: bool = false;
-        //UserCustomizable: bool = false;
 
         Projection: google.maps.MapCanvasProjection;
         Overlay: google.maps.OverlayView;
+
+        //Panorama: google.maps.StreetViewPanorama;
 
         constructor (settings: RenderSettings, listeners?: IMapStateListener[]) {
             this.ContainerId = settings.ContainerId;
@@ -343,23 +415,55 @@ module Meramedia.GoogleMaps {
                     ghost.State.Listeners[i].StateChangedEvent(ghost, STATE_CHANGE.MAPTYPEID_CHANGED);
                 }
             });
+
+            // Streetview addon
+            //google.maps.event.addListener(this.State.Panorama, 'pov_changed', function () {
+            //    //var panoCell = document.getElementById('pano_cell');
+            //    //panoCell.firstChild.nodeValue = ghost.State.Panorama.getPano();
+            //    console.log(ghost.State.Panorama.getPov().heading);
+            //});
+
+            //google.maps.event.addListener(this.State.Panorama, 'position_changed', function () {
+            //    var positionCell = document.getElementById('position_cell');
+            //    positionCell.firstChild.nodeValue = ghost.Panorama.getPosition();
+            //});
+
         }
 
         MapContainer(): JQuery {
             return $('#' + this.State.ContainerId);
         }
 
-        AddMarker(marker: Marker, pushMarker = true): void {
-            var gMapsMarker = marker.ToGoogleMapsMarker();
+        AddMarker(marker: Marker, pushMarker = true, notifyObservers = true): void {
+            var gMapsMarker = marker.MapsMarker();
 
             // Set the map for the marker -> the marker is added to the map
             if (pushMarker) {
                 this.State.MapSettings.Markers.push(marker);
             }
+
             gMapsMarker.setMap(this.State.Map);
 
+            if (notifyObservers) {
+                for (var i = 0; i < this.State.Listeners.length; i++) {
+                    this.State.Listeners[i].MarkerAddedEvent(this, marker);
+                }
+            }
+        }
+
+        RemoveMarker(marker: Marker) : void {
+            marker.MapsMarker().setMap(<google.maps.Map>null);
+            for (var i = 0; i < this.State.MapSettings.Markers.length; i++) {
+                var foundMarker = this.State.MapSettings.Markers[i];
+                if (typeof foundMarker !== 'undefined' && foundMarker.Id == marker.Id) {
+                    //delete this.State.MapSettings.Markers[i];
+                    this.State.MapSettings.Markers.remove(i);
+                }
+            }
+
+            // Notify listeners
             for (var i = 0; i < this.State.Listeners.length; i++) {
-                this.State.Listeners[i].MarkerAddedEvent(this, marker);
+                this.State.Listeners[i].MarkerRemovedEvent(this, marker);
             }
         }
 
@@ -379,11 +483,25 @@ module Meramedia.GoogleMaps {
                                     (H.IsDefined(mapOptions) ? mapOptions : this.State.MapSettings.MapOptions.AsGoogleMapOptions())
                              );
 
+            //this.State.Map.setOptions({
+            //    styles: [
+            //        {
+            //            stylers: [
+            //              { saturation: -73 },
+            //              { visibility: "simplified" }
+            //            ]
+            //        }
+            //    ]
+            //});
+
             // Create a projection that we may use layer on to map latLng -> pixel coordinates
             this.State.Overlay.setMap(this.State.Map);
             google.maps.event.addListener(this.State.Map, 'idle', function () {
                 ghost.State.Projection = ghost.State.Overlay.getProjection();
             });
+
+            //// StreetView
+            //this.State.Panorama = this.State.Map.getStreetView();
 
             // The maps has been created, lets add all our stored settings 
             // to it.

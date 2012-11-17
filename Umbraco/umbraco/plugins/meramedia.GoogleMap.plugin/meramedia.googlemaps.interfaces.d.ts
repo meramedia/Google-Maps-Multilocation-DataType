@@ -25,7 +25,7 @@ module Meramedia.GoogleMaps {
 
         GetMarkerOptions(): any;//google.maps.MarkerOptions;
         GetDisplayTitle(): string;
-        ToGoogleMapsMarker(): any;//google.maps.Marker;
+        MapsMarker(): any;//google.maps.Marker;
     }
 
     interface IMapState {

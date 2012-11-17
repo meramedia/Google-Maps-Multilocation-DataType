@@ -110,6 +110,7 @@ interface JQueryDeferred extends JQueryPromise {
 */
 interface JQueryEventObject extends Event {
    data: any;
+   keyCode: number;
    delegateTarget: Element;
    isDefaultPrevented(): bool;
    isImmediatePropogationStopped(): bool;

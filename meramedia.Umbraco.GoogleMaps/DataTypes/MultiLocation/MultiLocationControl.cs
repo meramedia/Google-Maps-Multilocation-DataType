@@ -345,7 +345,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 
                 HtmlGenericControl helpText = new HtmlGenericControl( "div" );
                 helpText.Attributes.Add( "class", "helpText" );
-                helpText.InnerText = "U mad bro?";
+                helpText.InnerText = meramedia.Umbraco.GoogleMaps.Helpers.Constants.HelpInformation;
 
                 helpWrapper.Controls.Add( helpText );
                 contentWrapper.Controls.Add( helpWrapper );
@@ -468,22 +468,23 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
                 togglerMarkerListLinkWrapper.Controls.Add( toggleMarkerListLink );
                 contentWrapper.Controls.Add( togglerMarkerListLinkWrapper );
 
-                HtmlGenericControl markerListWrapper = new HtmlGenericControl( "div" );
-                markerListWrapper.Attributes.Add( "class", "area markerSettings" );
-
-                HtmlGenericControl noMarkersText = new HtmlGenericControl( "strong" );
-                noMarkersText.InnerText = "There are currently no markers on the map";
-                markerListWrapper.Controls.Add( noMarkersText );
-
-                LiteralControl markerListDummy = new LiteralControl( MarkerListHtml );
-                markerListWrapper.Controls.Add( markerListDummy );
+                //HtmlGenericControl markerListWrapper = new HtmlGenericControl( "div" );
+                //markerListWrapper.Attributes.Add( "class", "area markerSettings" );
 
                 HtmlGenericControl markerList = new HtmlGenericControl( "ul" );
                 markerList.Attributes.Add( "class", "markerList" );
                 markerList.ID = "markerList_" + ClientID;
-                markerListWrapper.Controls.Add( markerList );
+                contentWrapper.Controls.Add( markerList );
 
-                contentWrapper.Controls.Add( markerListWrapper );
+                HtmlGenericControl noMarkersText = new HtmlGenericControl( "strong" );
+                noMarkersText.InnerText = "There are currently no markers on the map";
+                noMarkersText.Attributes.Add( "class", "noMarkersText" );
+                contentWrapper.Controls.Add( noMarkersText );
+
+                LiteralControl markerListDummy = new LiteralControl( MarkerListHtml );
+                contentWrapper.Controls.Add( markerListDummy );
+
+                //contentWrapper.Controls.Add( markerListWrapper );
 
                 #endregion // Marker List -->
 
@@ -536,7 +537,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
         private static string MarkerListHtml = @"<li class=""markerItemDummy"" style=""display:none;"">
 				<div>
 					<div class=""fl m10right"""">
-						<a href=""#"" class=""fakeLink settings"">Edit</a>
+						<a href=""#"" class=""fakeLink settings"" data-visible=""Hide"" data-hidden=""Edit"">Edit</a>
 					</div>
 					<div class=""fl"">
 						<div class=""name none""></div>

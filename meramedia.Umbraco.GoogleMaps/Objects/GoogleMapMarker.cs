@@ -18,27 +18,27 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// The user set name of the marker.
         /// This is set through the umbraco interface in the back-office
         /// </summary>
-        public string Name;
+        public string Name { get; set; }
 
         /// <summary>
         /// Title of the marker. This is the location address of the marker as default.
         /// </summary>
-        public string Title;
+        public string Title { get; set; }
 
-        ///// <summary>
-        ///// For future usage, HTML formated?
-        ///// </summary>
-        //public string Content;
+        /// <summary>
+        /// HTML formated content
+        /// </summary>
+        public string Content { get; set; }
 
         /// <summary>
         /// Icon url for the marker
         /// </summary>
-        public string Icon;
+        public string Icon { get; set; }
 
         /// <summary>
         /// Position in both longitude and latitude separated by ","
         /// </summary>
-        public string Position;
+        public string Position { get; set; }
 
         /// <summary>
         /// Position in latitude
@@ -67,5 +67,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// Set to null to disable linking 
         /// </summary>
         public string Link { get; set;}
+
+
     }
 }

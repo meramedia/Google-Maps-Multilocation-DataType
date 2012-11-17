@@ -1207,6 +1207,8 @@ declare module google.maps {
     export class event {
         static addDomListener(window: any, event: string, callback: (x) => void ): void;
 
+        static addListener(panorama: StreetViewPanorama, eventName: string, callback: () => void ): void;
+        static addListener(panorama: StreetViewPanorama, eventName: string, callback: (x: UIEvent) => void ): void;
         static addListener(map: Map, eventName: string, callback: (x: UIEvent) => void ) : void;
         static addListener(map: Map, eventName: string, callback: () => void ) : void;
         static addListener(marker: Marker, eventName: string, callback: (x: UIEvent) => void ) : void;
