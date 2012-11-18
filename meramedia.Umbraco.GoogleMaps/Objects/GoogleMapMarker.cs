@@ -47,7 +47,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         {
             get
             {
-                return ( !String.IsNullOrEmpty( Position ) && Position.IndexOf( ',' ) != -1 ) ? Position.Split( ',' ).First().Trim() : String.Empty;
+                return (!String.IsNullOrEmpty(Position) && Position.IndexOf(',') != -1) ? Position.Split(',').First().Trim() : String.Empty;
             }
         }
 
@@ -58,7 +58,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         {
             get
             {
-                return (!String.IsNullOrEmpty( Position ) && Position.IndexOf(',') != -1) ? Position.Split( ',' ).Last().Trim() : String.Empty;
+                return (!String.IsNullOrEmpty(Position) && Position.IndexOf(',') != -1) ? Position.Split(',').Last().Trim() : String.Empty;
             }
         }
 
@@ -66,7 +66,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// Link to redirect the user to when clicking the marker.
         /// Set to null to disable linking 
         /// </summary>
-        public string Link { get; set;}
+        public string Link { get; set; }
 
 
     }

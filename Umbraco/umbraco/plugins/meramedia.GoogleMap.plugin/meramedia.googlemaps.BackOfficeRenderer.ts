@@ -60,8 +60,7 @@ module Meramedia.GoogleMaps {
                 var renderSettings: RenderSettings = null;
                 if (typeof content === "undefined" || String.IsNullOrEmpty(content)) {
                     renderSettings = new RenderSettings(mapId, new MapSettings());
-                }
-                else {
+                } else {
                     renderSettings = new RenderSettings(mapId, JSON.parse(content));
                 }
 
@@ -120,18 +119,26 @@ module Meramedia.GoogleMaps {
         }
 
         RerenderDoneEvent(map: GoogleMap) {
-
+            // TODO: Implement
         }
 
         InitializationDoneEvent(map: GoogleMap): void {
-            // Activate autocomplete searchbar
+            /// <summary>
+            /// Called when the initialization process is completed for the map
+            /// </summary>
+
+            
             var ghost = this;
-            var container = map.MapContainer().parentsUntil('.gmapContainer').parent();
+            
+            // #region Searchbar
+            // Activate autocomplete searchbar
+            var container = map.GetMapContainer().parentsUntil('.gmapContainer').parent();
             var input = container.find('input.place')[0];
             var autocomplete = new google.maps.places.Autocomplete(<HTMLInputElement>input);
             autocomplete.bindTo('bounds', map.State.Map);
 
-            // Bind search button
+            // Bind the search button and the search area to allow the user
+            // to search for locations
             var searchButton = container.find('input.search');
             searchButton.click(function (e) {
                 e.preventDefault();
@@ -173,12 +180,13 @@ module Meramedia.GoogleMaps {
                   return false;
                 }
             });
+            // #endregion
         }
 
         MarkerAddedEvent(map: GoogleMap, marker: BackofficeMarker): void {
             // TODO: This method ended up getting quite bloated. Should be cleaned up a bit.
             var ghost = this;
-            var mapWrapper = map.MapContainer();
+            var mapWrapper = map.GetMapContainer();
             var MarkerUpdatedEvent = function () {
                 ghost.Save(map);
 
@@ -336,7 +344,7 @@ module Meramedia.GoogleMaps {
 
         MarkerRemovedEvent(map: GoogleMap, marker: BackofficeMarker): void {
             // Remove marker from the list
-            var mainWrapper = map.MapContainer().parentsUntil('.gmapContainer').parent();
+            var mainWrapper = map.GetMapContainer().parentsUntil('.gmapContainer').parent();
             mainWrapper.find('.markerList #marker-' + marker.Id).remove();
             this.Save(map);
         }
@@ -370,7 +378,7 @@ module Meramedia.GoogleMaps {
                     });
 
                     this.Menu = $('<div class="markerPopup"></div>').append(list).append('<div class="markerArrow"></div>');
-                    map.MapContainer().append(this.Menu);
+                    map.GetMapContainer().append(this.Menu);
 
                     // Minor touches to move the menu to a more pleasing position
                     this.Menu.css('left', event.pixel.x - 5);
@@ -386,7 +394,7 @@ module Meramedia.GoogleMaps {
         private ReplaceMenu(map: GoogleMap, newMenu: JQuery): BackOfficeRenderer {
             this.RemoveMenu();
             this.Menu = newMenu;
-            map.MapContainer().append(this.Menu);
+            map.GetMapContainer().append(this.Menu);
 
             return this;
         }

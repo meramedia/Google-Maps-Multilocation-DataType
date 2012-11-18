@@ -124,6 +124,7 @@
     //#endregion
 }
 
+// Extension for the JavaScript array to support a better removal method
 interface Array {
     remove(from: number, to?: number);
 }

@@ -265,11 +265,16 @@ module Meramedia.GoogleMaps {
 
     // MapSettings
     export class MapSettings implements IMapSettings {
+        /// <summary>
+        /// Map settings class for storing settings for the map.
+        /// This class may be serialized to store settings as json or other 
+        /// types of data representation methods.
+        /// </summary>
+        
         Markers: Marker[];
         CoreSettings: CoreSettings;
         MapOptions: MapOptions;
 
-        // Internal settings
         Width: number;
         Height: number;
 
@@ -378,6 +383,10 @@ module Meramedia.GoogleMaps {
         }
 
         private RegisterEvents(): void {
+            /// <summary>
+            /// Registers events for the map.
+            /// When an event has been performed listeners will be notified of this.
+            /// </summary>
             L.Log("Registering events", this);
             var ghost = this;
 
@@ -430,11 +439,10 @@ module Meramedia.GoogleMaps {
 
         }
 
-        MapContainer(): JQuery {
-            return $('#' + this.State.ContainerId);
-        }
-
-        AddMarker(marker: Marker, pushMarker = true, notifyObservers = true): void {
+        public AddMarker(marker: Marker, pushMarker = true, notifyObservers = true): void {
+            /// <summary>
+            /// Adds a marker to the map
+            /// </summary>
             var gMapsMarker = marker.MapsMarker();
 
             // Set the map for the marker -> the marker is added to the map
@@ -451,7 +459,10 @@ module Meramedia.GoogleMaps {
             }
         }
 
-        RemoveMarker(marker: Marker) : void {
+        public RemoveMarker(marker: Marker) : void {
+            /// <summary>
+            /// Removes the given marker from the map
+            /// </summary>
             marker.MapsMarker().setMap(<google.maps.Map>null);
             for (var i = 0; i < this.State.MapSettings.Markers.length; i++) {
                 var foundMarker = this.State.MapSettings.Markers[i];
@@ -467,12 +478,8 @@ module Meramedia.GoogleMaps {
             }
         }
 
-        GetState(): MapState {
-            return this.State;
-        }
-
-        Initialize(): void;
-        Initialize(mapOptions?: MapOptions/*, markers?: Marker[], rerender?: bool*/): void {
+        public Initialize(): void;
+        public Initialize(mapOptions?: MapOptions): void {
             L.Log("Initializing map", this, this.State.ContainerId);
 
             var ghost = this;
@@ -483,6 +490,7 @@ module Meramedia.GoogleMaps {
                                     (H.IsDefined(mapOptions) ? mapOptions : this.State.MapSettings.MapOptions.AsGoogleMapOptions())
                              );
 
+            // TODO: Maybe some map customization?
             //this.State.Map.setOptions({
             //    styles: [
             //        {
@@ -500,13 +508,11 @@ module Meramedia.GoogleMaps {
                 ghost.State.Projection = ghost.State.Overlay.getProjection();
             });
 
-            //// StreetView
-            //this.State.Panorama = this.State.Map.getStreetView();
-
-            // The maps has been created, lets add all our stored settings 
-            // to it.
+            //// TODO: StreetView
+            //this.State.Panorama = this.State.M ap.getStreetView();
 
             // TODO: Perform the rest of the rendering process
+
             if (!this.State.Initialized) {
                 this.RegisterEvents();
 
@@ -523,7 +529,24 @@ module Meramedia.GoogleMaps {
             }
         }
 
-        IsInitialized(): bool {
+        public GetMapContainer(): JQuery {
+            /// <summary>
+            /// Returns the map container as a JQuery object
+            /// </summary>
+            return $('#' + this.State.ContainerId);
+        }
+
+        public GetState(): MapState {
+            /// <summary>
+            /// Returns the internal state for the map
+            /// </summary>
+            return this.State;
+        }
+
+        public IsInitialized(): bool {
+            /// <summary>
+            /// Returns True if the map have been initialized, False otherwise
+            /// </summary>
             return this.State.Initialized;
         }
     }

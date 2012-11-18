@@ -82,6 +82,6 @@ module Meramedia.GoogleMaps {
         Initialize(): void;
         IsInitialized(): bool;
 
-        MapContainer(): JQuery;
+        GetMapContainer(): JQuery;
     }
 }
