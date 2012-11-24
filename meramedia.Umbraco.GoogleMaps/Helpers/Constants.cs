@@ -24,20 +24,21 @@
 
         // Javascript
         public static string[] JavaScriptLibraries = new string[]{
-                                                        PluginResourceDir + "libs/json.min.js",
+                                                        //PluginResourceDir + "libs/json.min.js",
                                                         "https://maps.google.com/maps/api/js?sensor=false&libraries=places&v=3.9",
-                                                        PluginResourceDir + "meramedia.googlemaps.Core.js",
-                                                        PluginResourceDir + "meramedia.googlemaps.GoogleMap.js",
+                                                        PluginResourceDir + "meramedia.Helpers.js",
+                                                        PluginResourceDir + "meramedia.GoogleMap.js",
+                                                        PluginResourceDir + "meramedia.BingMap.js",
                                                         //PluginResourceDir + "meramedia.googlemaps.Renderer.js"
                                                     };
 
         // Contains the backoffice listener
-        public const string[] MultiLocationJavaScript = new string[]{
-                                                                    PluginResourceDir + "meramedia.googlemaps.BackOfficeRenderer.js" //"multilocation.GoogleMap.js";//"meramedia.MultiLocation.GoogleMap.min.js";
+        public static string[] MultiLocationJavaScript = new string[]{
+                                                                    PluginResourceDir + "meramedia.BackOfficeRenderer.js" //"multilocation.GoogleMap.js";//"meramedia.MultiLocation.GoogleMap.min.js";
                                                                 };
         // Contains the frontoffice listener
-        public const string[] FrontOfficeMapStateListenerJavascript = new string[]{
-                                                                        PluginResourceDir + "meramedia.googlemaps.FrontOfficeRenderer.js" //"meramedia.MultiLocation.Frontoffice.Listener.min.js";
+        public static string[] FrontOfficeMapStateListenerJavascript = new string[]{
+                                                                        PluginResourceDir + "meramedia.FrontOfficeRenderer.js" //"meramedia.MultiLocation.Frontoffice.Listener.min.js";
                                                                 };
 
         /* Information, stupid way to set. Should probably move to some better place or something... */

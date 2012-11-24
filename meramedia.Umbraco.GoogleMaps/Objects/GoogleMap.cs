@@ -68,17 +68,12 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         }
 
         [JsonProperty(PropertyName = "CoreSettings")]
-        public CoreSettings OtherSettings;
-        public class CoreSettings
-        {
-            //[JsonIgnore]// JsonProperty(PropertyName = "DefaultSearchIcon")]
-            //public string DefaultSearchIcon;
+        internal CoreSettings OtherSettings;
 
-            [JsonProperty(PropertyName = "AllowCustomLinks")]
-            public bool AllowCustomLinks { get; set; }
-        }
-
-        public GoogleMap()
+        /// <summary>
+        /// GoogleMap instance for displaying an existing map
+        /// </summary>
+        internal GoogleMap()
         {
             Markers = new List<GoogleMapMarker>();
 
@@ -103,6 +98,7 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         /// <returns>Iframe url, not the iframe object</returns>
         public String GetIframeUrl(String center = null)
         {
+            // TODO: Add missing attributes to the URL (maptype etc)
             return "https://maps.google.se/maps?q=" + (!String.IsNullOrEmpty(center) ? center : Options.Center) + "&ie=UTF8&t=m&z=" + Options.Zoom + "&output=embed";
         }
 
@@ -117,14 +113,15 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         public String GetStaticImageUrl(int? width = null, int? height = null, String center = null)
         {
             // Create our base url for the custom icons url
-            String baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Host + (HttpContext.Current.Request.Url.IsDefaultPort ? String.Empty : ":" + HttpContext.Current.Request.Url.Port); //umbraco.library.NiceUrl( -1 ).Replace( ".aspx", "/" ); 
+            String baseUrl = HttpContext.Current.Request.Url.Scheme + "://" + HttpContext.Current.Request.Url.Host + (HttpContext.Current.Request.Url.IsDefaultPort ? String.Empty : ":" + HttpContext.Current.Request.Url.Port);
 
             // Generate 
             String markers = String.Empty;
+            bool isLocalhost = HttpContext.Current.Request.Url.Host.ToLower().Equals("localhost");
             foreach (var marker in Markers)
                 markers += String.Concat(
                     String.Format("markers=icon:{0}%7C{1}",
-                    (marker.Icon == null ? "red" : (HttpContext.Current.Request.Url.Host.ToLower().Equals("localhost") ? "red" : baseUrl + marker.Icon)), // localhost == default icon.
+                    (marker.Icon == null ? "red" : (isLocalhost ? "red" : baseUrl + marker.Icon)),
                     marker.Position),
                     "&"
                 );
@@ -168,6 +165,15 @@ namespace meramedia.Umbraco.GoogleMaps.Objects
         public override String ToString()
         {
             return this.Serialize();
+        }
+
+        /// <summary>
+        /// Settings for the core functions of the map
+        /// </summary>
+        internal class CoreSettings
+        {
+            [JsonProperty(PropertyName = "AllowCustomLinks")]
+            public bool AllowCustomLinks { get; set; }
         }
     }
 }

@@ -1,27 +1,32 @@
-﻿/// <reference path="libs/google.maps.d.ts" />
-module Meramedia.GoogleMaps {
+﻿/// <reference path="google.maps.d.ts" />
+module Meramedia.Maps {
     interface IMapStateListener {
-        RerenderDoneEvent(map: IMap);
+        RerenderDoneEvent(map: IMap) : void;
         InitializationDoneEvent(map: IMap): void;
         MarkerAddedEvent(map: IMap, marker: IMapsMarker): void;
         MarkerRemovedEvent(map: IMap, marker: IMapsMarker): void;
 
-        StateChangedEvent(map: IMap, state: any /*STATE_CHANGE*/, e?: any): void;
+        StateChangedEvent(map: IMap, state: any, e?: any): void;
+    }
+
+    // Not currently in use
+    interface LatLng {
+        lat: string;
+        lng: string;
     }
 
     interface IMapsMarker {
-        Id: number;
-        Name: string;
-        Clickable: bool;
-        Visible: bool;
-        Draggable: bool;
-        ZIndex: number;
-        Position: any; // google.maps.LatLng
+        Id: any;
 
-        Content: string;
+        SetClickable(clickable: bool): void;
+        SetDraggable(draggable: bool): void;
+        SetIcon(icon: string): void;
+        SetLink(link: string): void;
+        SetTitle(title: string): void;
+        SetName(name: string): void;
+        SetMapsPosition(latlng: any): void; // TODO: Some generic position LatLng
 
-        Icon: string;
-        Link: string;
+        LatLngPosition(): any; // TODO: Some generic position LatLng
 
         GetMarkerOptions(): any;//google.maps.MarkerOptions;
         GetDisplayTitle(): string;
@@ -80,8 +85,20 @@ module Meramedia.GoogleMaps {
         State: IMapState;
 
         Initialize(): void;
+
+        FitMarkerBounds(markers?: IMapsMarker[]): void;
+        FitBounds(bounds: any): void;
+        CreateMarker(latLng: any, pushMarker?: bool, notifyObservers?: bool): IMapsMarker;
+        AddMarker(marker: IMapsMarker, pushMarker?: bool, notifyObservers?: bool): void;
+        RemoveMarker(marker: IMapsMarker): void;
+        GetMap(): any; // TODO: Generic map
+        Initialize(mapOptions?: IMapOptions): void;
+        GetMapWrapper(): JQuery;
+        GetState(): IMapState;
+        GetMarkers(): IMapsMarker[];
         IsInitialized(): bool;
 
-        GetMapContainer(): JQuery;
+        AddListener(listener: IMapStateListener): void;
+        RemoveListener(listener: IMapStateListener): void;
     }
 }

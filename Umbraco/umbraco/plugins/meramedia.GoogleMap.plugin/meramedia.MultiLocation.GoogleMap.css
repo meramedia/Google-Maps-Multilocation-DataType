@@ -54,9 +54,19 @@
 
     .gmapContainer .map
     {
+        border: 1px solid #d6d6d6;
         clear: both;
-        height: 375px;
-        width: 461px;
+        height: 350px;
+        overflow: visible;
+        width: 498px;
+    }
+
+    .gmapContainer .loadingbar
+    {
+        background: rgba(255,255,255,0.4) url('images/loader.gif') 244px 170px no-repeat;
+        height: 350px;
+        position: absolute;
+        width: 498px;
     }
 
     .gmapContainer .mapWidth, .gmapContainer .mapHeight
@@ -149,6 +159,16 @@
             display: none;
         }
 
+        .gmapContainer select.dropdownSource {
+            width: 150px;
+        }
+
+        .gmapContainer .iconPreview img {
+            max-width: 24px;
+            max-height: 24px;
+            vertical-align: middle;
+        }
+
     .gmapContainer .area
     {
         background: #F7F8FA;
@@ -169,8 +189,6 @@
 /* Wrapper for map (to correcly render popup) */
 .mapWrapper
 {
-    background: #708D91;
-    padding: 4px;
     position: relative;
 }
 
@@ -227,7 +245,7 @@ ul.markerList
 
         ul.markerList .name.none
         {
-            background: transparent url('grid.png') 0 0 repeat;
+            background: transparent url('images/grid.png') 0 0 repeat;
             padding: 6px;
         }
 
@@ -269,26 +287,27 @@ ul.markerList
 .markerPopup
 {
     height: auto;
+    min-width: 120px;
     position: absolute;
-    width: 120px;
+    width: auto;
 }
 
     .markerPopup .markerArrow
     {
-        background: transparent url('arrow_bottom.png') -4px 0 no-repeat;
+        background: transparent url('images/arrow_bottom-filled.png') -4px 0 no-repeat;
         height: 10px;
         width: 37px;
     }
 
         .markerPopup .markerArrow.active
         {
-            background: transparent url('arrow_bottom-filled.png') -4px 0 no-repeat;
+            background: transparent url('images/arrow_bottom.png') -4px 0 no-repeat;
         }
 
     .markerPopup ul
     {
-        background-color: #fff;
-        border: 0*;
+        background-color: #708d91;
+        border: 0;
         list-style: none;
         margin: 0;
         padding: 0;
@@ -296,20 +315,21 @@ ul.markerList
 
         .markerPopup ul li
         {
-            color: #708d91;
+            border-top: 1px solid #587477;
+            color: #fff;
             cursor: pointer;
             padding: 4px 10px;
         }
 
-            .markerPopup ul li:hover
+            .markerPopup ul li:first-child
             {
-                background-color: #708d91;
-                color: #fff;
+                border-top: none;
             }
 
-            .markerPopup ul li:last-child
+            .markerPopup ul li:hover
             {
-                border: none;
+                background-color: #fff;
+                color: #708d91;
             }
 
 /* Special */

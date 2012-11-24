@@ -275,7 +275,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             {
                 MinMarkers = MinMarkers,
                 MaxMarkers = MaxMarkers,
-                DefaultLocation = String.Concat(this.DefaultLocation, meramedia.Umbraco.GoogleMaps.Helpers.Constants.Comma, this.DefaultZoom),
+                DefaultLocation = String.Concat(this.DefaultLocation, ",", this.DefaultZoom),
                 DefaultWidth = MapWidth,
                 DefaultHeight = MapHeight,
                 AllowCustomLinks = AllowCustomLinks
@@ -293,12 +293,12 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
                 foreach (var item in m.Children)
                 {
                     if (item.ContentType.Alias == "Image")
-                        media.Add(new { id = item.Id, url = item.getProperty("umbracoFile").Value.ToString() });
+                        media.Add(new { id = item.Id, url = item.getProperty("umbracoFile").Value.ToString(), name = item.Text });
                 }
 
                 var mediaInput = new HtmlInputHidden();
                 mediaInput.Value = JsonConvert.SerializeObject(media);
-                mediaInput.Attributes.Add("class", "markerValueList");
+                mediaInput.Attributes.Add("class", "markerIconList");
                 this.Controls.Add(mediaInput);
             }
             #endregion // <!-- Stored settings
@@ -317,11 +317,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             this.GoogleMap = new InternalGoogleMapControl()
             {
                 CssClass = "map",
-                ID = string.Concat("map_", this.ClientID),
-                Height = 350,
-                Width = 492
-                //Height = Unit.Parse( this.MapHeight ),
-                //Width = Unit.Parse( this.MapWidth )
+                ID = string.Concat("map_", this.ClientID)
             };
 
             mapWrapper.Controls.Add(this.GoogleMap);
@@ -574,10 +570,10 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 							<small>The icon that the marker will be displayed with in the map</small>
 						</div>
 						<div>
-							<select name=""icon"">
-								<option value=""default"" selected=""selected"">Default</option>
-							</select>
-							<span class=""iconPreview""></span>
+							<select class=""dropdownSource"" name=""markerIcon"">
+                                <option selected=""selected"" value=""default"">Default</option>
+                            </select>
+                            <span class=""iconPreview""></span>
 						</div>
 					</div>
 				</div>

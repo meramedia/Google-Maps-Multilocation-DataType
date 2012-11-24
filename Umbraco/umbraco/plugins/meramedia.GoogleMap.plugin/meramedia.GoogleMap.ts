@@ -1,50 +1,30 @@
-﻿/// <reference path="libs/google.maps.d.ts" />
-/// <reference path="libs/jquery.d.ts" />
-/// <reference path="meramedia.googlemaps.interfaces.d.ts" />
-/// <reference path="meramedia.googlemaps.Core.ts"/>
+﻿/// <reference path="../../../TypeScript/Google/google.maps.d.ts" />
+/// <reference path="../../../TypeScript/JQuery/jquery.d.ts" />
+/// <reference path="libs/meramedia.maps.d.ts" />
+/// <reference path="meramedia.Helpers.d.ts"/>
+/// <reference path="core/meramedia.Maps.Core.ts"/>
 module Meramedia.GoogleMaps {
-    // Default values that are available
-    export module DefaultValues {
-        export class Map {
-            // Map settings
-            static Zoom: number = 12;
-            static Center: string = "0,0";
-        }
-
-        export class Marker {
-            // Marker settings
-            static ZIndex: number = 10;
-        }
-
-        export class CoreSettings {
-            static DefaultWidth: number = 500;
-            static DefaultHeight: number = 500;
-            static MaxMarkers: number = -1;
-            static MinMarkers: number = 0;
-        }
-    }
-
-    export class FakeState {
+    class FakeState {
         static Markers: google.maps.Marker[] = [];
     }
 
     // Maps marker. Transformable into a google maps marker
-    export class Marker implements IMapsMarker {
+    export class Marker implements Maps.IMapsMarker {
         private static NextId: number = 0;
 
         // Internal
         Id: number;
-        Name: string = null;
-        Title: string = null;
-        Visible: bool = true;
-        Draggable: bool = false;
-        Clickable: bool = false;
-        ZIndex: number = DefaultValues.Marker.ZIndex;
-        Link: string = null;
-        Icon: string = null;
-        Position: string = "0,0";
+        private Name: string = null;
+        private Title: string = null;
+        private Visible: bool = true;
+        private Draggable: bool = false;
+        private Clickable: bool = false;
+        private ZIndex: number = Maps.Core.DefaultValues.Marker.ZIndex;
+        private Link: string = null;
+        private Icon: string = null;
+        private Position: string;
 
-        Content: string = null;
+        private Content: string = null;
 
         /// <summary>
         /// Must be set before applying ToGoogleMapsMarker
@@ -60,34 +40,37 @@ module Meramedia.GoogleMaps {
             this.Id = Marker.NextId++;
         }
 
-        static FromObject(markerOptions: any) : Marker {
+        public static FromObject(markerOptions: any) : Marker {
             /// <summary>
             /// Creates a marker from json marker options
             /// </summary>
             var marker = new Marker();
-            marker.Name = H.IfDefined(markerOptions.Name, String.Empty);
-            marker.Title = H.IfDefined(markerOptions.Title, null);
-            marker.Visible = H.IfDefined(markerOptions.Visible, marker.Visible);
-            marker.Draggable = H.IfDefined(markerOptions.Draggable, marker.Draggable);
-            marker.Clickable = H.IfDefined(markerOptions.Clickable, marker.Clickable);
-            marker.ZIndex = H.IfDefined(markerOptions.ZIndex, marker.ZIndex);
-            marker.Link = H.IfDefined(markerOptions.Link, marker.Link);
-            marker.Icon = H.IfDefined(markerOptions.Icon, marker.Icon);
-            marker.Position = H.IfDefined(markerOptions.Position, "0,0");
-            marker.Content = H.IfDefined(markerOptions.Content, null);
+            marker.Name = Helpers.H.IfDefined(markerOptions.Name, Helpers.String.Empty);
+            marker.Title = Helpers.H.IfDefined(markerOptions.Title, null);
+            marker.Visible = Helpers.H.IfDefined(markerOptions.Visible, marker.Visible);
+            marker.Draggable = Helpers.H.IfDefined(markerOptions.Draggable, marker.Draggable);
+            marker.Clickable = Helpers.H.IfDefined(markerOptions.Clickable, marker.Clickable);
+            marker.ZIndex = Helpers.H.IfDefined(markerOptions.ZIndex, marker.ZIndex);
+            marker.Link = Helpers.H.IfDefined(markerOptions.Link, marker.Link);
+            marker.Icon = Helpers.H.IfDefined(markerOptions.Icon, marker.Icon);
+            marker.Position = Helpers.H.IfDefined(markerOptions.Position, Maps.Core.DefaultValues.Map.Center);
+            marker.Content = Helpers.H.IfDefined(markerOptions.Content, null);
 
             return marker;
         }
 
-        GetDisplayTitle(): string {
-            if (H.IsDefined(this.Name)) {
-                return this.Name + (H.IsDefined(this.Title) ? this.Title : String.Empty);
+        public GetDisplayTitle(): string {
+            if (Helpers.H.IsDefined(this.Name) && !Helpers.String.IsNullOrEmpty(this.Name)) {
+                return this.Name + (Helpers.H.IsDefined(this.Name) && !Helpers.String.IsNullOrEmpty(this.Title) ? "\n" + this.Title : Helpers.String.Empty);
             }
             return this.Title;
         }
 
-        LatLngPosition(): google.maps.LatLng {
-            return H.IfDefined(this.Position, new google.maps.LatLng(0,0), new google.maps.LatLng(parseFloat(this.Position.split(',')[0]), parseFloat(this.Position.split(',')[1])))
+        public LatLngPosition(): google.maps.LatLng {
+            if (Helpers.H.IsDefined(this.Position)) {
+                return new google.maps.LatLng(parseFloat(this.Position.split(',')[0]), parseFloat(this.Position.split(',')[1]));
+            }
+            return new google.maps.LatLng(0, 0);
         }
 
         private GetMarkerOptions() : google.maps.MarkerOptions {
@@ -98,18 +81,18 @@ module Meramedia.GoogleMaps {
                 icon: this.Icon,
                 title: this.GetDisplayTitle(),
                 zIndex: this.ZIndex,
-                position: H.IfDefined(this.Position, new google.maps.LatLng(0,0), new google.maps.LatLng(parseFloat(this.Position.split(',')[0]), parseFloat(this.Position.split(',')[1])))
+                position: this.LatLngPosition()//(Helpers.H.IsDefined(this.Position, new google.maps.LatLng(0,0), new google.maps.LatLng(parseFloat(this.Position.split(',')[0]), parseFloat(this.Position.split(',')[1])))
             };
         }
 
-        public Update(toGoogleMapsMarker: bool = false): void {
+        public Update(updateMapsMarker: bool = false): void {
             var marker = this.MapsMarker();
-            if (!toGoogleMapsMarker) {
+            if (!updateMapsMarker) {
                 this.Visible = marker.getVisible();
                 this.Draggable = marker.getDraggable();
                 this.Clickable = marker.getClickable();
                 this.ZIndex = marker.getZIndex();
-                this.Icon = (marker.getIcon() == null ? null : marker.getIcon().url);
+                this.Icon = (marker.getIcon() == null ? null : marker.getIcon().toString());
                 this.Position = marker.getPosition().toString().replace('(', '').replace(')', '');
             } else {
                 marker.setVisible(this.Visible);
@@ -121,6 +104,7 @@ module Meramedia.GoogleMaps {
             }
         }
 
+        //#region __Setters
         public SetIcon(icon: string): void {
             this.Icon = icon;
             this.Update(true);
@@ -156,10 +140,41 @@ module Meramedia.GoogleMaps {
             this.Update(true);
         }
 
+        public SetContent(content: string): void {
+            this.Content = content;
+        }
+
+        public SetName(name: string): void {
+            this.Name = name;
+            this.Update(true);
+        }
+        //#endregion
+        //#region __Getters
+        public GetContent(): string {
+            return this.Content;
+        }
+
+        public GetName(): string {
+            return this.Name;
+        }
+
+        public GetLink(): string {
+            return this.Link;
+        }
+
+        public GetPosition(): string {
+            return this.Position;
+        }
+
+        public GetIcon(): string {
+            return this.Icon;
+        }
+        //#endregion
+
         public SetMapsPosition(position: any, position2: any): void;
         public SetMapsPosition(position: google.maps.LatLng): void;
         public SetMapsPosition(position: any, position2?: any): void {
-            if (H.IsDefined(position2)) {
+            if (Helpers.H.IsDefined(position2)) {
                 this.Position = position + "," + position2;
             } else {
                 this.Position = position.toString().replace('(', '').replace(')', '');
@@ -167,8 +182,8 @@ module Meramedia.GoogleMaps {
             this.Update(true);
         }
 
-        MapsMarker(): google.maps.Marker {
-            if (!H.IsDefined(FakeState.Markers[this.Id])) {
+        public MapsMarker(): google.maps.Marker {
+            if (!Helpers.H.IsDefined(FakeState.Markers[this.Id])) {
                 var ghost = this;
                 var MapsMarker = new google.maps.Marker(this.GetMarkerOptions());
                 google.maps.event.addListener(MapsMarker, 'click', function (e) {
@@ -202,49 +217,19 @@ module Meramedia.GoogleMaps {
         }
     }
 
-    export enum STATE_CHANGE {
-        MAP_LEFT_CLICK,
-        MAP_RIGHT_CLICK,
-        CENTER_CHANGED,
-        ZOOM_CHANGED,
-        MAPTYPEID_CHANGED
-    }
-    
-    // Core settings for the backoffice
-    // Prevents min markers/max markers
-    export class CoreSettings {
-        AllowCustomLink: bool;
-        MaxMarkers: number = DefaultValues.CoreSettings.MaxMarkers;
-        MinMarkers: number = DefaultValues.CoreSettings.MinMarkers;
-        DefaultWidth: number = DefaultValues.CoreSettings.DefaultWidth;
-        DefaultHeight: number = DefaultValues.CoreSettings.DefaultHeight;
-
-        // coreSettings = json object
-        constructor (coreSettings?: any /*CoreSettings json*/) {
-            // Check if we have something defined
-            if (H.IsDefined(coreSettings)) {
-                this.AllowCustomLink = H.IfDefined(coreSettings.AllowCustomLinks, this.AllowCustomLink);
-                this.MaxMarkers = H.IfDefined(coreSettings.MaxMarkers, this.MaxMarkers);
-                this.MinMarkers = H.IfDefined(coreSettings.MinMarkers, this.MinMarkers);
-                this.DefaultHeight = H.IfDefined(coreSettings.DefaultHeight, this.DefaultHeight);
-                this.DefaultWidth = H.IfDefined(coreSettings.DefaultWidth, this.DefaultWidth);
-            }
-        }
-    }
-
     // Map options for rendering the map
     // Zoom, center, mapTypeId
-    export class MapOptions implements IMapOptions {
-        Zoom: number = DefaultValues.Map.Zoom;
-        Center: string = DefaultValues.Map.Center;
+    export class MapOptions implements Maps.IMapOptions {
+        Zoom: number = Maps.Core.DefaultValues.Map.Zoom;
+        Center: string = Maps.Core.DefaultValues.Map.Center;
         MapTypeId: google.maps.MapTypeId = google.maps.MapTypeId.ROADMAP;
     
         // mapOptions = json object
         constructor (mapOptions?: any) {
-            if (H.IsDefined(mapOptions)) {
-                this.Zoom = H.IfDefined(mapOptions.Zoom, this.Zoom);
-                this.Center = H.IfDefined(mapOptions.Center, this.Center);
-                this.MapTypeId = H.IfDefined(mapOptions.MapTypeId, google.maps.MapTypeId.ROADMAP); // TODO: Works?
+            if (Helpers.H.IsDefined(mapOptions)) {
+                this.Zoom = Helpers.H.IfDefined(mapOptions.Zoom, this.Zoom);
+                this.Center = Helpers.H.IfDefined(mapOptions.Center, this.Center);
+                this.MapTypeId = Helpers.H.IfDefined(mapOptions.MapTypeId, google.maps.MapTypeId.ROADMAP); // TODO: Works?
             }
         }
 
@@ -264,7 +249,7 @@ module Meramedia.GoogleMaps {
     }
 
     // MapSettings
-    export class MapSettings implements IMapSettings {
+    export class MapSettings implements Maps.IMapSettings {
         /// <summary>
         /// Map settings class for storing settings for the map.
         /// This class may be serialized to store settings as json or other 
@@ -272,7 +257,7 @@ module Meramedia.GoogleMaps {
         /// </summary>
         
         Markers: Marker[];
-        CoreSettings: CoreSettings;
+        CoreSettings: Maps.Core.CoreSettings;
         MapOptions: MapOptions;
 
         Width: number;
@@ -281,26 +266,26 @@ module Meramedia.GoogleMaps {
         constructor (mapSettings?: any /* Json object */) {
             this.Markers = new Array();
 
-            if (H.IsDefined(mapSettings)) {
+            if (Helpers.H.IsDefined(mapSettings)) {
                 // Parse markers
-                if (H.IsDefined(mapSettings.Markers)) {
+                if (Helpers.H.IsDefined(mapSettings.Markers)) {
                     for (var i = 0; i < mapSettings.Markers.length; i++) {
                         this.Markers.push(Marker.FromObject(mapSettings.Markers[i]));
                     }
                 }
 
-                if (H.IsDefined(mapSettings.MapOptions)) {
+                if (Helpers.H.IsDefined(mapSettings.MapOptions)) {
                     this.MapOptions = new MapOptions(mapSettings.MapOptions);
                 }
                 else {
                     this.MapOptions = new MapOptions();
                 }
 
-                if (H.IsDefined(mapSettings.CoreSettings)) {
-                    this.CoreSettings = new CoreSettings(mapSettings.CoreSettings);
+                if (Helpers.H.IsDefined(mapSettings.CoreSettings)) {
+                    this.CoreSettings = new Maps.Core.CoreSettings(mapSettings.CoreSettings);
                 }
                 else {
-                    this.CoreSettings = new CoreSettings();
+                    this.CoreSettings = new Maps.Core.CoreSettings();
                 }
             }
 
@@ -308,21 +293,21 @@ module Meramedia.GoogleMaps {
     }
 
     // Settings for rendering the map
-    export class RenderSettings implements IRenderSettings {
+    export class RenderSettings implements Maps.IRenderSettings {
         MapSettings: MapSettings;
         ContainerId: string;
 
         // ContainerId = container id for the map
         // mapSettings = mapsettings for the map
         constructor (ContainerId: string,  mapSettings: MapSettings) {
-            if (!H.IsDefined(ContainerId)) {
-                throw new ArgumentException("ContainerId must be defined");
+            if (!Helpers.H.IsDefined(ContainerId)) {
+                throw new Helpers.ArgumentException("ContainerId must be defined");
             }
 
             this.ContainerId = ContainerId;
 
             // Convert the MapSettings to the correct object
-            if (H.IsDefined(mapSettings)) {
+            if (Helpers.H.IsDefined(mapSettings)) {
                 this.MapSettings = new MapSettings(mapSettings);
             }
             else {
@@ -331,12 +316,12 @@ module Meramedia.GoogleMaps {
         }
     }
 
-    export class MapState implements IMapState {
+    export class MapState implements Maps.IMapState {
         ContainerId: string;
         
         Map: google.maps.Map;
         MapSettings: MapSettings;
-        Listeners: IMapStateListener[];
+        Listeners: Maps.IMapStateListener[];
         
         Initialized: bool = false;
         UpdatedBounds: bool = false;
@@ -346,11 +331,11 @@ module Meramedia.GoogleMaps {
 
         //Panorama: google.maps.StreetViewPanorama;
 
-        constructor (settings: RenderSettings, listeners?: IMapStateListener[]) {
+        constructor (settings: RenderSettings, listeners?: Maps.IMapStateListener[]) {
             this.ContainerId = settings.ContainerId;
             //this.UserCustomizable = settings.UserCustomizable;
             this.MapSettings = settings.MapSettings;
-            this.Listeners = H.IfDefined(listeners, []);
+            this.Listeners = Helpers.H.IfDefined(listeners, []);
         }
 
         Update(): void {
@@ -365,15 +350,15 @@ module Meramedia.GoogleMaps {
     }
 
     // Google maps
-    export class GoogleMap implements IMap {
+    export class GoogleMap implements Maps.IMap {
         State: MapState;
 
-        constructor (settings: RenderSettings, listeners?: IMapStateListener[]) {
+        constructor (settings: RenderSettings, listeners?: Maps.IMapStateListener[]) {
             if (settings == null) {
-                throw new MissingArgumentException("settings (IRenderSettings) must be set");
+                throw new Helpers.MissingArgumentException("settings (IRenderSettings) must be set");
             } 
             if (document.getElementById(settings.ContainerId) == null) {
-                throw new InvalidArgumentException("Invalid GoogleMap container id");
+                throw new Helpers.InvalidArgumentException("Invalid GoogleMap container id");
             }
 
             // Create our MapState
@@ -382,46 +367,50 @@ module Meramedia.GoogleMaps {
             this.State.Overlay.draw = function () { };
         }
 
+        public GetContainerId(): string {
+            return this.State.ContainerId;
+        }
+
         private RegisterEvents(): void {
             /// <summary>
             /// Registers events for the map.
             /// When an event has been performed listeners will be notified of this.
             /// </summary>
-            L.Log("Registering events", this);
+            Helpers.L.Log("Registering events", this);
             var ghost = this;
 
             google.maps.event.addListener(this.State.Map, 'click', function (e) {
                 ghost.State.Update();
                 for (var i = 0; i < ghost.State.Listeners.length; i++) {
-                    ghost.State.Listeners[i].StateChangedEvent(ghost, STATE_CHANGE.MAP_LEFT_CLICK, e);
+                    ghost.State.Listeners[i].StateChangedEvent(ghost, Maps.Core.STATE_CHANGE.MAP_LEFT_CLICK, e);
                 }
             });
 
             google.maps.event.addListener(this.State.Map, 'rightclick', function (e) {
                 ghost.State.Update();
                 for (var i = 0; i < ghost.State.Listeners.length; i++) {
-                    ghost.State.Listeners[i].StateChangedEvent(ghost, STATE_CHANGE.MAP_RIGHT_CLICK, e);
+                    ghost.State.Listeners[i].StateChangedEvent(ghost, Maps.Core.STATE_CHANGE.MAP_RIGHT_CLICK, e);
                 }
             });
 
             google.maps.event.addListener(this.State.Map, 'center_changed', function (e) {
                 ghost.State.Update();
                 for (var i = 0; i < ghost.State.Listeners.length; i++) {
-                    ghost.State.Listeners[i].StateChangedEvent(ghost, STATE_CHANGE.CENTER_CHANGED, e);
+                    ghost.State.Listeners[i].StateChangedEvent(ghost, Maps.Core.STATE_CHANGE.CENTER_CHANGED, e);
                 }
             });
 
             google.maps.event.addListener(this.State.Map, 'zoom_changed', function (e) {
                 ghost.State.Update();
                 for (var i = 0; i < ghost.State.Listeners.length; i++) {
-                    ghost.State.Listeners[i].StateChangedEvent(ghost, STATE_CHANGE.ZOOM_CHANGED, e);
+                    ghost.State.Listeners[i].StateChangedEvent(ghost, Maps.Core.STATE_CHANGE.ZOOM_CHANGED, e);
                 }
             });
 
             google.maps.event.addListener(this.State.Map, 'maptypeid_changed', function () {
                 ghost.State.Update();
                 for (var i = 0; i < ghost.State.Listeners.length; i++) {
-                    ghost.State.Listeners[i].StateChangedEvent(ghost, STATE_CHANGE.MAPTYPEID_CHANGED);
+                    ghost.State.Listeners[i].StateChangedEvent(ghost, Maps.Core.STATE_CHANGE.MAPTYPEID_CHANGED);
                 }
             });
 
@@ -436,7 +425,57 @@ module Meramedia.GoogleMaps {
             //    var positionCell = document.getElementById('position_cell');
             //    positionCell.firstChild.nodeValue = ghost.Panorama.getPosition();
             //});
+        }
 
+        public FitMarkerBounds(markers?: Marker[]): void {
+            var latlngbounds = new google.maps.LatLngBounds();
+            if (!Helpers.H.IsDefined(markers)) {
+                markers = this.GetMarkers();
+            }
+            for (var i = 0; i < markers.length; i++) {
+                latlngbounds.extend((<Marker>markers[i]).MapsMarker().getPosition());
+            }
+            this.FitBounds(latlngbounds);
+        }
+
+        public FitBounds(bounds: any): void {
+            this.GetMap().fitBounds(bounds);
+        }
+
+        public AddListener(listener: Maps.IMapStateListener): void {
+            for (var i = 0; i < this.State.Listeners.length; i++) {
+                if (this.State.Listeners[i] == listener) {
+                    return;
+                }
+            }
+            this.State.Listeners.push(listener);
+
+            if (this.IsInitialized()) {
+                listener.InitializationDoneEvent(this);
+            }
+        }
+
+        public RemoveListener(listener: Maps.IMapStateListener): void {
+            for (var i = 0; i < this.State.Listeners.length; i++) {
+                if (this.State.Listeners[i] == listener) {
+                    this.State.Listeners.splice(i, 1);
+                    return;
+                }
+            }
+        }
+
+        public CreateMarker(latLng: google.maps.LatLng, pushMarker = true, notifyObservers = true): Marker {
+            var marker = new Marker();
+            if (pushMarker) {
+                this.State.MapSettings.Markers.push(marker);
+            }
+            marker.MapsMarker().setMap(this.State.Map);
+            if (notifyObservers) {
+                for (var i = 0; i < this.State.Listeners.length; i++) {
+                    this.State.Listeners[i].MarkerAddedEvent(this, marker);
+                }
+            }
+            return marker;
         }
 
         public AddMarker(marker: Marker, pushMarker = true, notifyObservers = true): void {
@@ -478,16 +517,20 @@ module Meramedia.GoogleMaps {
             }
         }
 
-        public Initialize(): void;
+        public GetMap(): google.maps.Map {
+            return this.State.Map;
+        }
+
+        //public Initialize(): void;
         public Initialize(mapOptions?: MapOptions): void {
-            L.Log("Initializing map", this, this.State.ContainerId);
+            Helpers.L.Log("Initializing map", this, this.State.ContainerId);
 
             var ghost = this;
 
             // Create our map
             this.State.Map = new google.maps.Map(
                                     document.getElementById(this.State.ContainerId),
-                                    (H.IsDefined(mapOptions) ? mapOptions : this.State.MapSettings.MapOptions.AsGoogleMapOptions())
+                                    (Helpers.H.IsDefined(mapOptions) ? mapOptions : this.State.MapSettings.MapOptions.AsGoogleMapOptions())
                              );
 
             // TODO: Maybe some map customization?
@@ -515,8 +558,7 @@ module Meramedia.GoogleMaps {
 
             if (!this.State.Initialized) {
                 this.RegisterEvents();
-
-                if (H.IsDefined(this.State.MapSettings.Markers)) {
+                if (Helpers.H.IsDefined(this.State.MapSettings.Markers)) {
                     $.each(ghost.State.MapSettings.Markers, function (i, v: Marker) {
                         ghost.AddMarker(v, false);
                     });
@@ -529,7 +571,7 @@ module Meramedia.GoogleMaps {
             }
         }
 
-        public GetMapContainer(): JQuery {
+        public GetMapWrapper(): JQuery {
             /// <summary>
             /// Returns the map container as a JQuery object
             /// </summary>
@@ -541,6 +583,10 @@ module Meramedia.GoogleMaps {
             /// Returns the internal state for the map
             /// </summary>
             return this.State;
+        }
+
+        public GetMarkers(): Marker[] {
+            return this.State.MapSettings.Markers;
         }
 
         public IsInitialized(): bool {

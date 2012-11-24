@@ -1,4 +1,4 @@
-﻿module Meramedia.GoogleMaps {
+﻿module Meramedia.Helpers {
     //#region Debug/Log
     var DebugSession: bool = false;
     // Declare console.log
@@ -9,6 +9,39 @@
         warn: function () { },
         info: function() { }
     } : console;
+
+    export class String {
+        static Empty: string = "";
+        static IsNullOrEmpty(a: string): bool {
+            return (typeof a === 'undefined' || a == null || a === Empty);
+        }
+    }
+
+    export class Exception {
+        private Msg: string;
+        private static Regex: RegExp = /function\s+(.{1,})\s*\(/;
+
+        constructor (msg?: string) {
+            this.Msg = msg;
+        }
+
+        private GetName(): string {
+            var results = (Exception.Regex).exec((<any>this).constructor.toString());
+            return (results && results.length > 1) ? results[1] : "Exception";
+        }
+
+        toString(): string {
+            if (typeof this.Msg === 'undefined' || this.Msg == null) {
+                return this.GetName() + ": -";
+            }
+            return this.GetName() + ": " + this.Msg;
+        }
+    }
+
+    export class MissingArgumentException extends Exception { }
+    export class ArgumentException extends Exception { }
+    export class InvalidArgumentException extends ArgumentException { }
+    export class FatalException extends Exception { }
 
     /**
         Class for logging / debugging
@@ -71,52 +104,17 @@
 
         private static IsDebug(): bool {
             return (DebugSession);
-        }
+        } 
     }
-
-    //#endregion
-
-    //#region Exceptions
-
-    // Simple exception for debugging
-    export class Exception {
-        private Msg: string;
-        private static Regex: RegExp = /function\s+(.{1,})\s*\(/;
-
-        constructor (msg?: string) {
-            this.Msg = msg;
-        }
-
-        private GetName(): string {
-            var results = (Exception.Regex).exec((<any>this).constructor.toString());
-            return (results && results.length > 1) ? results[1] : "Exception";
-        }
-
-        toString(): string {
-            return this.GetName() + ": " + H.IfDefined(this.Msg, "-");
-        }
-    }
-
-    export class MissingArgumentException extends Exception {}
-    export class ArgumentException extends Exception { }
-    export class InvalidArgumentException extends ArgumentException {}
 
     //#endregion
 
     //#region Helpers
-    export class String {
-        static Empty: string = "";
-        static IsNullOrEmpty(a: string): bool {
-            return (!H.IsDefined(a) || a === Empty);
-        }
-    }
-
     // Helper class for checking object values
     export class H {
-        static IsDefined(obj: any): bool {
+        static IsDefined(obj?: any): bool {
             return !(typeof obj === 'undefined' || obj == null);
         }
-
         static IfDefined(obj: any, otherwise: any, otherwise2?: any): any {
             return (IsDefined(obj) ? IfDefined(otherwise2, obj) : otherwise);
         }
@@ -129,7 +127,7 @@ interface Array {
     remove(from: number, to?: number);
 }
 
-Array.prototype.remove = function (from:number, to?: number) {
+Array.prototype.remove = function (from: number, to?: number) {
     var rest = this.slice((to || from) + 1 || this.length);
     this.length = from < 0 ? this.length + from : from;
     return this.push.apply(this, rest);

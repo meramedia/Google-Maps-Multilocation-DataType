@@ -1,6 +1,6 @@
-﻿/// <reference path="libs/google.maps.d.ts" />
-/// <reference path="libs/jquery.d.ts" />
-/// <reference path="meramedia.googlemaps.interfaces.d.ts" />
+﻿/// <reference path="../../../TypeScript/Google/google.maps.d.ts" />
+/// <reference path="../../../TypeScript/JQuery/jquery.d.ts" />
+/// <reference path="meramedia.maps.d.ts" />
 module Meramedia.GoogleMaps {
     export class FrontOfficeRenderer implements IMapStateListener {
         /// <summary>
