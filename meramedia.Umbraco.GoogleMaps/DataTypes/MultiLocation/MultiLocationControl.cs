@@ -108,7 +108,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
         /// <summary>
         /// Hidden locations settings
         /// </summary>
-		public HtmlInputHidden HiddenLocations { get; set; }
+        public HtmlInputControl HiddenLocations { get; set; }
 
 		/// <summary>
 		/// Gets or sets the google map.
@@ -200,7 +200,10 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             // Data location (saved settings and settings)
             // --------------------------
             // Data
-            this.HiddenLocations = new HtmlInputHidden();
+            if( meramedia.Umbraco.GoogleMaps.Helpers.Constants.Debug )
+                this.HiddenLocations = new HtmlInputText();
+            else
+                this.HiddenLocations = new HtmlInputText();
             this.HiddenLocations.ID = string.Concat( "hiddenLocations_", this.ClientID );
             this.HiddenLocations.Value = this.Data;
 
@@ -281,6 +284,8 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
             // Textbox
 			var SearchTextBox = new HtmlInputText();
 			SearchTextBox.Attributes.Add("class", "place");
+            SearchTextBox.Attributes.Add( "value", String.Empty );
+
 			
 			// Button
 			var SearchButton = new HtmlInputButton() { Value = "Search" };
@@ -353,12 +358,15 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 
 			DivMarkerList.Controls.Add( MarkerList );
 			this.Controls.Add( DivMarkerList );
-
 			this.Controls.Add( HiddenLocations );
 
 			// Settings such as minimum locations and maximum locations (markers)
 			var divSettings = new HtmlGenericControl( "div" );
-			var SettingsList = new HtmlInputHidden();
+			HtmlInputControl SettingsList = null;
+            if( !meramedia.Umbraco.GoogleMaps.Helpers.Constants.Debug )
+                SettingsList = new HtmlInputHidden();
+            else
+                SettingsList = new HtmlInputText();
 
             // Create our settings list with the values that we have
             var settings = new {
@@ -372,6 +380,7 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 
             SettingsList.Value = JsonConvert.SerializeObject(settings);
 			SettingsList.Attributes.Add( "class", "mapSettings" );
+            
 			this.Controls.Add( SettingsList );
 
             // --------------------------
@@ -404,11 +413,17 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 			args.IsValid = true;
 			if( MinMarkers != -1 )
 			{
+                if (String.IsNullOrEmpty(Data))
+                {
+                    args.IsValid = false;
+                    return;
+                }
+
 				Objects.GoogleMap map = JsonConvert.DeserializeObject<Objects.GoogleMap>( Data );
                 if(MinMarkers == 0)
                     return;
 
-				if( map.Markers == null || map.Markers.Count < MinMarkers )
+				if( map == null || map.Markers == null || map.Markers.Count < MinMarkers )
 					args.IsValid = false;
 			}
 		}
@@ -423,8 +438,10 @@ namespace meramedia.Umbraco.GoogleMaps.DataTypes.MultiLocation
 			args.IsValid = true;
 			if( MaxMarkers != -1 )
 			{
+                if(String.IsNullOrEmpty(Data))
+                    return;
 				Objects.GoogleMap map = JsonConvert.DeserializeObject<Objects.GoogleMap>( Data );
-				if( map.Markers.Count > MaxMarkers )
+				if( map == null || map.Markers == null || map.Markers.Count > MaxMarkers )
 					args.IsValid = false;
 			}
 		}
