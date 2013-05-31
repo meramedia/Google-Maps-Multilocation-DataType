@@ -9,9 +9,9 @@
 *@
 @inherits umbraco.MacroEngines.DynamicNodeContext
 @using meramedia.Umbraco.GoogleMaps.Objects
-@using Newtonsoft.Json;
 @{
-    if( Parameter["MapPropertyName"] == null || Parameter["MapPropertyName"] == "") {
+    if(String.IsNullOrEmpty(Parameter["MapPropertyName"]))
+    {
         return;
     }
     
@@ -25,11 +25,13 @@
     
     // Width/Height
     Int32 height = map.Height, width = map.Width;
-    if(Parameter["Height"] != "") {
+    if (!String.IsNullOrEmpty(Parameter["Height"]))
+    {
         height = Int32.Parse(Parameter["Height"]);
     }
-    
-    if(Parameter["Width"] != "") {
+
+    if (!String.IsNullOrEmpty(Parameter["Width"]))
+    {
         width = Int32.Parse(Parameter["Width"]);
     }
 }

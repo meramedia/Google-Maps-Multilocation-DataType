@@ -25,6 +25,8 @@
         public const string RenderMultiLocationJavaScript = PluginResourceDir + "meramedia.MultiLocation.Render.min.js";
         public const string FrontOfficeMapStateListenerJavascript = PluginResourceDir + "meramedia.MultiLocation.Frontoffice.Listener.min.js";
 
+        public const bool Debug = false;
+
 		/* Helpers */
 		internal const char Comma = ',';
 
