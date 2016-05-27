@@ -1,4 +1,4 @@
 Google Maps Multilocation DataType
 ==================================
 
-A google maps datatype for Umbraco.
+MOVED TO https://bitbucket.org/meramedia/google-maps-multilocation-datatype
